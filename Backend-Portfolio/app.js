@@ -7,7 +7,7 @@ app.use(
   cors({
     origin: [
       process.env.CORS_ORIGIN,
-      "https://vercel.com/shivwhoos-projects/portfolio",
+      "https://portfolio-silk-three-85.vercel.app",
     ],
     credentials: true,
   }),
