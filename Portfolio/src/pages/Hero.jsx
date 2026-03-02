@@ -88,6 +88,7 @@ const HeroSection = () => {
             {/* 2. Download CV Action (NEW) */}
             <a
               href="https://acrobat.adobe.com/id/urn:aaid:sc:AP:7f96f047-8909-423d-8f57-a3ae1fb1eb6b"
+              target="_blank"
               className="px-6 py-3.5 md:px-8 md:py-4 rounded-lg border border-indigo-500/50 hover:bg-indigo-500/10 text-indigo-400 font-bold tracking-widest uppercase transition-all duration-300 flex justify-center items-center text-xs md:text-sm gap-2 shadow-[0_0_15px_rgba(99,102,241,0.1)] hover:shadow-[0_0_25px_rgba(99,102,241,0.3)] flex-1 sm:flex-none"
             >
               <svg
