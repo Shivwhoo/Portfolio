@@ -3,10 +3,15 @@ import cors from "cors";
 
 export const app = express();
 
-app.use(cors({
-  origin: process.env.CORS_ORIGIN,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      process.env.CORS_ORIGIN,
+      "https://vercel.com/shivwhoos-projects/portfolio",
+    ],
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 
