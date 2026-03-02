@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+
+/* Make sure in dono par height: 100% ya overflow hidden na laga ho */
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+section {
+  scroll-margin-top: 80px; 
+}
+
+
+body {
+  @apply transition-colors duration-300;
+}
+
+/* Light mode */
+body {
+  @apply bg-white text-black;
+}
+
+/* Dark mode */
+.dark body {
+  @apply bg-gradient-to-br from-zinc-950 via-neutral-900 to-black text-white;
+}

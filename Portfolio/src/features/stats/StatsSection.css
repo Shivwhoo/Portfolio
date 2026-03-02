@@ -1,0 +1,528 @@
+.stats-dashboard-container {
+  position: relative;
+  width: 100%;
+  z-index: 10;
+}
+
+.header-group {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.section-header {
+  font-size: 2.5rem;
+  color: #fff;
+  font-weight: bold;
+}
+
+.highlight {
+  color: #818cf8;
+}
+
+/* ================= DESKTOP GRID (Default) ================= */
+.dashboard-grid {
+  display: flex !important;
+  flex-direction: row; /* Ensure desktop is side-by-side */
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  transition: all 0.5s ease;
+}
+
+/* THE CARD BASE */
+.glass-module {
+  flex: 1 1 33.33%;
+  min-width: 300px;
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 24px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  height: 550px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  transition:
+    flex 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 0.4s ease,
+    min-width 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+    background 0.4s ease,
+    filter 0.4s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+/* HOVER LOGIC */
+.glass-module.expanded {
+  flex: 1 1 60%;
+  min-width: 650px;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid #818cf8 !important;
+  box-shadow: 0 0 40px rgba(129, 140, 248, 0.15);
+  z-index: 2;
+}
+
+.glass-module.collapsed {
+  flex: 1 1 20%;
+  min-width: 200px;
+  opacity: 0.4;
+  filter: grayscale(60%) blur(1px);
+}
+
+/* VIEW SWITCHING */
+.view-compact {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: opacity 0.3s ease;
+  opacity: 1;
+  width: 100%;
+  min-width: 260px;
+}
+.view-expanded {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  right: 30px;
+  bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease 0.2s;
+}
+.glass-module.expanded .view-compact {
+  opacity: 0;
+  pointer-events: none;
+}
+.glass-module.expanded .view-expanded {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* BIG LOGOS TOP */
+.big-logo-container {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.huge-logo {
+  height: 90px;
+  width: 90px;
+  opacity: 0.9;
+}
+
+/* Codeforces CSS-only Logo */
+.cf-bars-wrapper {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  height: 90px;
+  margin-bottom: 40px;
+}
+.cf-big-bar {
+  width: 28px;
+  border-radius: 6px;
+}
+.cf-big-bar.yellow { height: 50px; background: #ffc01e; }
+.cf-big-bar.blue { height: 90px; background: #3b82f6; }
+.cf-big-bar.red { height: 70px; background: #ef4743; }
+
+/* TEXT HEADERS */
+.compact-text-group {
+  margin-bottom: 25px;
+  text-align: left;
+}
+.platform-title {
+  font-size: 1.1rem;
+  font-family: monospace;
+  color: #ffffff;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+.rank-tag {
+  font-family: monospace;
+  color: #aaaaaa;
+  font-size: 0.9rem;
+}
+
+/* LEETCODE MIDDLE SECTION */
+.lc-split {
+  display: flex;
+  flex-direction: row; /* Desktop row */
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+.progress-ring {
+  position: relative;
+  width: 90px;
+  height: 90px;
+}
+.progress-ring svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+.ring-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.1);
+  stroke-width: 6;
+}
+.ring-meter {
+  fill: none;
+  stroke: #818cf8;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 283;
+  stroke-dashoffset: 80;
+}
+.ring-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.big-num {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  display: block;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.label {
+  font-size: 0.6rem;
+  color: #aaaaaa;
+  font-family: monospace;
+}
+
+/* LEETCODE BARS */
+.bars-container {
+  flex: 1;
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+.bar-label {
+  width: 40px;
+  color: #cccccc;
+}
+.bar-val {
+  width: 30px;
+  color: #ffffff;
+  text-align: right;
+  font-weight: bold;
+}
+.bar-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+.easy-fill { background: #00b8a3; }
+.med-fill { background: #ffc01e; }
+.hard-fill { background: #ef4743; }
+
+/* FOOTER */
+.lc-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: monospace;
+  color: #cccccc;
+  font-size: 0.9rem;
+  margin-top: auto;
+}
+.lc-footer strong {
+  color: #ffffff;
+  font-size: 1.1rem;
+  margin-left: 8px;
+}
+
+/* HERO TEXT */
+.hero-section {
+  text-align: center;
+  margin-bottom: auto;
+}
+.hero-rating {
+  font-size: 3.5rem !important;
+  font-weight: 900 !important;
+  margin: 0 0 10px 0 !important;
+  line-height: 1;
+}
+.cf-color {
+  color: #a855f7;
+  text-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+.hero-sub {
+  font-size: 0.85rem;
+  color: #aaaaaa;
+  letter-spacing: 1px;
+  font-family: monospace;
+}
+
+/* MINI GRID */
+.stats-mini-grid {
+  display: flex;
+  gap: 15px;
+  margin: 25px 0;
+}
+.mini-box {
+  flex: 1;
+  background: rgba(255,255,255,0.03);
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.mini-box span {
+  font-size: 0.7rem;
+  color: #aaaaaa;
+  display: block;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-family: monospace;
+}
+.mini-box strong {
+  font-size: 1.1rem;
+  color: #ffffff;
+}
+
+/* BUTTONS */
+.action-btn {
+  display: block;
+  text-align: center;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(129, 140, 248, 0.4);
+  color: #818cf8;
+  text-decoration: none;
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 0.9rem;
+  background: transparent;
+  transition: 0.3s;
+}
+.action-btn:hover {
+  background: rgba(129, 140, 248, 0.1);
+  box-shadow: 0 0 15px rgba(129, 140, 248, 0.3);
+}
+
+/* EXPANDED VIEW STYLES (Desktop Only) */
+.exp-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+.exp-header h2 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fff;
+}
+.exp-content {
+  display: flex;
+  gap: 40px;
+  height: 100%;
+}
+.exp-stats-box,
+.terminal-log {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 30px;
+  border-radius: 16px;
+}
+.exp-stats-box p {
+  color: #ccc;
+  font-family: monospace;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+.exp-stats-box strong {
+  color: #fff;
+  font-size: 1.5rem;
+  display: block;
+  margin-top: 5px;
+}
+.log-line {
+  font-family: monospace;
+  color: #ccc;
+  margin-bottom: 15px;
+}
+.log-line.success {
+  color: #818cf8;
+}
+
+/* ================= RESPONSIVE (MOBILE FIXES) ================= */
+/* ================= RESPONSIVE (MOBILE FIXES WITH EXPAND ENABLED) ================= */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    flex-direction: column !important; 
+    gap: 30px;
+    padding: 0 15px; 
+  }
+  
+  .glass-module {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important; 
+    padding: 25px 20px !important; 
+    margin: 0 !important;
+    transition: all 0.4s ease; /* Tap karne par smooth transition ke liye */
+  }
+
+  /* Jab mobile pe card tap ho (Expanded state) */
+  .glass-module.expanded {
+    border: 1px solid #818cf8 !important;
+    box-shadow: 0 0 30px rgba(129, 140, 248, 0.2);
+    background: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  /* Doosre cards jo open nahi hain */
+  .glass-module.collapsed {
+    opacity: 0.5 !important;
+    filter: grayscale(60%) !important;
+  }
+  
+  /* Compact view default pe dikhega */
+  .view-compact {
+    display: flex !important;
+    height: auto; 
+  }
+  
+  /* Expanded view default pe hidden rahega */
+  .view-expanded {
+    position: relative !important; /* Desktop ki absolute positioning hatayi */
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    display: none !important; 
+  }
+
+  /* JAB CARD EXPAND HO, TOH COMPACT KO CHHUPAO AUR EXPANDED KO DIKHAO */
+  .glass-module.expanded .view-compact {
+    display: none !important; 
+  }
+
+  .glass-module.expanded .view-expanded {
+    display: flex !important; 
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    animation: mobileFadeIn 0.4s ease forwards;
+  }
+
+  /* Expanded view ke andar ka layout mobile ke liye stack kiya */
+  .exp-content {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+  .exp-header h2 {
+    font-size: 1.4rem;
+  }
+  .exp-stats-box, .terminal-log {
+    padding: 20px !important;
+  }
+
+  /* Shrink Logos for Mobile */
+  .big-logo-container {
+    height: 80px;
+    margin-bottom: 15px;
+  }
+  .huge-logo {
+    height: 60px;
+    width: 60px;
+  }
+  .cf-bars-wrapper {
+    height: 60px;
+    margin-bottom: 20px;
+  }
+  .cf-big-bar.yellow { height: 35px; }
+  .cf-big-bar.blue { height: 60px; }
+  .cf-big-bar.red { height: 45px; }
+
+  /* Stack LeetCode Info on Mobile */
+  .lc-split {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .bars-container {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  /* Shrink Hero Texts */
+  .hero-rating {
+    font-size: 2.8rem !important;
+  }
+  
+  /* Adjust Mini Grid */
+  .stats-mini-grid {
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .mini-box {
+    padding: 10px;
+  }
+  .mini-box span {
+    font-size: 0.65rem;
+  }
+  .mini-box strong {
+    font-size: 1rem;
+  }
+
+  /* Adjust Buttons */
+  .action-btn {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 400px) {
+  .hero-rating {
+    font-size: 2.2rem !important;
+  }
+  .progress-ring {
+    width: 80px;
+    height: 80px;
+  }
+  .ring-text .big-num {
+    font-size: 1.2rem;
+  }
+  .ring-text .label {
+    font-size: 0.55rem;
+  }
+}
+
+/* Smooth fade-in animation custom built for mobile */
+@keyframes mobileFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  50% { transform: translateY(100%); }
+  100% { transform: translateY(-100%); }
+}
