@@ -52,7 +52,7 @@ const StatsSection = () => {
   const [ghLanguages, setGhLanguages] = useState({});
 
   // Yahan apna handle update kar lena
-  const codeforcesHandle = "your_cf_handle";
+  const codeforcesHandle = "Shivwhoo";
   const githubHandle = "Shivwhoo";
 
   useEffect(() => {
