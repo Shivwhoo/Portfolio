@@ -13,7 +13,7 @@ const projectsData = [
     status: "Deployed",
     color: "from-purple-500/20 to-emerald-500/20",
     borderColor: "group-hover:border-purple-500/50",
-    image:"image.png"
+    image: "image.png",
   },
   {
     title: "Blogify // BLOG Apllication",
@@ -147,7 +147,8 @@ const Projects = () => {
                         <img
                           src={project.image}
                           alt={`${project.title} screenshot`}
-                          className="absolute inset-0 w-full h-full object-cover object-top z-20 opacity-80 group-hover/card:opacity-5 transition-all duration-500"
+                          // 🔥 FIX: object-cover object-top ko hata kar object-contain kar diya hai
+                          className="absolute inset-0 w-full h-full object-contain z-20 opacity-80 group-hover/card:opacity-5 transition-all duration-500"
                         />
                       )}
                     </div>
