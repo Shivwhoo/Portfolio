@@ -29,7 +29,7 @@ const techData = [
     skills: [
       { name: "Node.js", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
       { name: "Express", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original-wordmark.svg", invertDark: true },
-      { name:"Socket.io",icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/socketio/socketio-original.svg"}
+      { name:"Socket.io",icon:"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/socketio/socketio-original.svg"},
       // Multer is an NPM package, so using the NPM logo to represent it
       { name: "Multer", icon: "https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/npm.svg", invertDark: true },
     ],
