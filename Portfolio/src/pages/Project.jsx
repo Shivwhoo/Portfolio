@@ -8,7 +8,7 @@ const projectsData = [
     description: "A high-performance, full-stack chat application engineered for instant payload delivery. Features secure 1-on-1 communication tunnels, dynamic group clusters, live typing indicators, and seamless multimedia integration. Built with an optimized Socket.io architecture and a responsive, cyberpunk-inspired UI/UX.",
     tech: ["React", "Node.js", "Socket.io", "MongoDB", "Redux", "Cloudinary"],
     github: "https://github.com/Shivwhoo/Pingster",
-    live: "https://pingster-tone.onrender.com",
+    live: "https://pingster-opal.vercel.app/",
     status: "Deployed",
     color: "from-purple-500/20 to-emerald-500/20",
     borderColor: "group-hover:border-purple-500/50"
@@ -18,7 +18,7 @@ const projectsData = [
     description: "A full-stack blogging ecosystem allowing users to create, edit, and interact with rich-text content. Optimized for speed and SEO, featuring a clean UI and a powerful backend CMS.",
     tech: ["React", "Node.js", "Express", "Tailwind CSS"],
     github: "https://github.com/Shivwhoo/Blogify-React-Node.js",
-    live: "#",
+    live: "https://pingster-opal.vercel.app/",
     status: "Not-deployed",
     color: "from-blue-500/20 to-indigo-500/20",
     borderColor: "group-hover:border-blue-500/50"
