@@ -4,35 +4,35 @@ import { motion } from "framer-motion";
 // Aapke projects ka data
 const projectsData = [
   {
-    title: "Blogify",
+    title: "Pingster // Real-Time Comms Matrix",
+    description: "A high-performance, full-stack chat application engineered for instant payload delivery. Features secure 1-on-1 communication tunnels, dynamic group clusters, live typing indicators, and seamless multimedia integration. Built with an optimized Socket.io architecture and a responsive, cyberpunk-inspired UI/UX.",
+    tech: ["React", "Node.js", "Socket.io", "MongoDB", "Redux", "Cloudinary"],
+    github: "https://github.com/Shivwhoo/Pingster",
+    live: "https://pingster-tone.onrender.com",
+    status: "Deployed",
+    color: "from-purple-500/20 to-emerald-500/20",
+    borderColor: "group-hover:border-purple-500/50"
+  },
+  {
+    title: "Blogify // BLOG Apllication",
     description: "A full-stack blogging ecosystem allowing users to create, edit, and interact with rich-text content. Optimized for speed and SEO, featuring a clean UI and a powerful backend CMS.",
     tech: ["React", "Node.js", "Express", "Tailwind CSS"],
-    github: "#",
+    github: "https://github.com/Shivwhoo/Blogify-React-Node.js",
     live: "#",
-    status: "Deployed",
+    status: "Not-deployed",
     color: "from-blue-500/20 to-indigo-500/20",
     borderColor: "group-hover:border-blue-500/50"
   },
-  {
-    title: "VidStream // YouTube Clone",
-    description: "A highly scalable video streaming platform. Engineered with robust backend logic for video uploading, processing, and seamless playback. Features secure user authentication and dynamic content delivery.",
-    tech: ["Node.js", "Express", "MongoDB", "Multer", "Cloudinary"],
-    github: "#",
-    live: "#",
-    status: "Active_Node",
-    color: "from-red-500/20 to-orange-500/20",
-    borderColor: "group-hover:border-red-500/50"
-  },
-  {
-    title: "LinkForge // URL Shortener",
-    description: "A lightning-fast URL shortening service. Built to handle high-volume redirects with minimal latency. Includes click-tracking analytics and custom alias generation.",
-    tech: ["JavaScript", "Node.js", "MongoDB", "Express"],
-    github: "#",
-    live: "#",
-    status: "Optimized",
-    color: "from-emerald-500/20 to-teal-500/20",
-    borderColor: "group-hover:border-emerald-500/50"
-  }
+{
+  title: "Portfolio // Personal Brand Engine",
+  description: "A fully immersive developer portfolio engineered to showcase projects as products, not just code. Built with a strong focus on UI/UX, performance, and storytelling, it delivers a 3D-inspired interactive experience with smooth animations, dynamic project rendering, and responsive design. Designed to function as both a personal brand hub and a conversion tool for recruiters and collaborators.",
+  tech: ["React", "Vite", "Tailwind CSS", "Framer Motion", "Three.js"],
+  github: "https://github.com/Shivwhoo/Portfolio",
+  live: "https://portfolio-silk-three-85.vercel.app/",
+  status: "Live 🚀",
+  color: "from-purple-500/20 to-indigo-500/20",
+  borderColor: "group-hover:border-purple-400/60"
+}
 ];
 
 const containerVariants = {
