@@ -13,7 +13,7 @@ const projectsData = [
     status: "Deployed",
     color: "from-purple-500/20 to-emerald-500/20",
     borderColor: "group-hover:border-purple-500/50",
-    image:"C:\Users\shiva\Desktop\Portfolio\Portfolio\src\main.jsx"
+    image:"C:\Users\shiva\Desktop\Portfolio\Portfolio\src"
   },
   {
     title: "Blogify // BLOG Apllication",
