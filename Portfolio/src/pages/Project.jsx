@@ -13,6 +13,25 @@ const projectsData = [
     status: "Deployed",
     color: "from-purple-500/20 to-emerald-500/20",
     borderColor: "group-hover:border-purple-500/50",
+    image: "image1.png",
+  },
+  {
+    title: "EdTraining // Growth & Learning Platform",
+    description:
+      "A production-grade edtech platform designed to streamline student onboarding, lead generation, and secure course subscriptions. Features dynamic consultation flows, Razorpay-powered payment infrastructure, robust backend validation, and a scalable MERN architecture focused on performance, security, and seamless user experience.",
+    tech: [
+      "React",
+      "Node.js",
+      "Express.js",
+      "MongoDB",
+      "Razorpay",
+      "Tailwind CSS",
+    ],
+    github: "https://github.com/Shivwhoo/EdTraining",
+    live: "https://ed-training.vercel.app/",
+    status: "Deployed",
+    color: "from-cyan-500/20 to-blue-500/20",
+    borderColor: "group-hover:border-cyan-500/50",
     image: "image.png",
   },
   {
