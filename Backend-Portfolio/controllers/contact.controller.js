@@ -2,6 +2,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import Contact from "../models/contact.model.js";
 import { transporter } from "../emailConfig.js";
 import  ApiResponse  from "../utils/ApiResponse.js";
+import ApiError from "../utils/ApiError.js";
 
 // POST /api/contact
 export const sendMessage = asyncHandler(async (req, res) => {
