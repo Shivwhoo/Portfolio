@@ -5,7 +5,33 @@ import { slideUp, lineDraw } from "../hooks/useScrollAnimation";
 // ─── Project data ─────────────────────────────────────────
 const projectsData = [
   {
+    id: "00",
+    title: "ReviewFlow AI",
+    subtitle: "AI-Powered Review Generation for B2C Businesses",
+    description: "Production‑grade SaaS platform enabling businesses to collect authentic Google reviews via QR codes. Features dynamic business‑defined tags, Groq LLM for natural review generation, token‑optimised prompts, QR deferred linking, multi‑location analytics dashboard, and admin portal. Built mobile‑first with PWA support.",
+    tech: ["Next.js 15", "TypeScript", "Tailwind CSS", "ShadCN UI", "MongoDB", "Redis", "Groq (LLM)", "NextAuth", "Vercel"],
+    github: "https://github.com/Shivwhoo/ReviewFlowAI",
+    live: "https://github.com/Shivwhoo/ReviewFlow",
+    status: "IN DEVELOPMENT",
+    accentBg: "var(--violet)",
+    image: "/reviewflow-preview.png",
+    confession: "The AI sometimes writes reviews that sound too human – we call it 'feature, not bug'."
+},
+{
     id: "01",
+    title: "Autism Care Connect",
+    subtitle: "Full‑Stack Platform for Autism & Specially‑Abled Treatment Centers",
+    description: "End‑to‑end platform for autism therapy centers – bridges parents and therapists with Google Calendar appointment booking, parent dashboard for session tracking, milestone charts, behavior logs, and therapist notes. Built with accessibility first: voice reading (Web Speech API), dark mode, high contrast, and text size controls. Integrates Razorpay for token payments and Resend for automated email confirmations. Designed with calming pastel UI, soft shadows, and rounded cards – no sensory overload.",
+    tech: ["React", "Node.js", "Express", "MongoDB", "Tailwind CSS", "Framer Motion", "Google Calendar API", "Razorpay", "Resend", "JWT", "Web Speech API", "Cloudinary"],
+    github: "https://github.com/Shivwhoo/Special-Smile-An-autism-webpage-",
+    live: "https://special-smile-an-autism-webpage.vercel.app/",
+    status: "COMPLETED",
+    accentBg: "var(--pastel-blue)",
+    image: "/autism-care-preview.png",
+    confession: "Parents cried seeing the milestone chart – we didn't plan for that, but we'll take it."
+},
+  {
+    id: "02",
     title: "Pingster",
     subtitle: "Real-Time Comms Matrix",
     description: "High-performance full-stack chat app. Secure 1-on-1 tunnels, group clusters, live typing, multimedia. Socket.io architecture with a cyberpunk-inspired UX.",
@@ -18,8 +44,8 @@ const projectsData = [
     confession: "I copy-pasted this Socket.io auth logic from a 2022 forum.",
   },
   {
-    id: "02",
-    title: "EdTraining",
+    id: "03",
+    title: "EdTraining - An interview assesstment",
     subtitle: "Growth & Learning Platform",
     description: "Production-grade edtech platform: dynamic consultation flows, Razorpay-powered payments, robust validation, and a scalable MERN architecture for student onboarding.",
     tech: ["React", "Node.js", "Express.js", "MongoDB", "Razorpay", "Tailwind"],
@@ -31,7 +57,7 @@ const projectsData = [
     confession: "The database validation relies heavily on good vibes.",
   },
   {
-    id: "03",
+    id: "04",
     title: "Blogify",
     subtitle: "Blog Application",
     description: "Full-stack blogging ecosystem — rich-text creation, editing, and interaction. Optimised for speed and SEO. Clean UI with a powerful backend CMS.",
@@ -43,7 +69,7 @@ const projectsData = [
     confession: "Actually built this during a boring college lecture.",
   },
   {
-    id: "04",
+    id: "05",
     title: "Portfolio",
     subtitle: "Personal Brand Engine",
     description: "The very site you're reading. Punk silkscreen aesthetic meets SWE portfolio — letterpress stamps, sticker badges, zine scroll. Built at 2am, shipped by morning.",
