@@ -1,28 +1,413 @@
 @import "tailwindcss";
 
+/* ============================================================
+   LIVING POSTER — DESIGN SYSTEM
+   Shivam Kishore Portfolio | Punk Silkscreen Aesthetic
+   ============================================================ */
 
-/* Make sure in dono par height: 100% ya overflow hidden na laga ho */
-body, html {
+/* ── DESIGN TOKENS ──────────────────────────────────────── */
+:root {
+  --charcoal:    #141414;
+  --charcoal-2:  #1c1c1c;
+  --ink:         #0A0A0A;
+  --vermilion:   #E4401C;
+  --vermilion-2: #c23516;
+  --acid:        #FFD500;
+  --cream:       #F4EDD8;
+  --cream-2:     #EDE0C4;
+  --off-white:   #D9D1BC;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+}
+
+/* ── RESET & BASE ───────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth; /* Restore native smooth scroll since Lenis is disabled */
+  overflow-x: clip; /* clip instead of hidden — doesn't create stacking context that breaks scroll */
+}
+
+body {
+  background-color: var(--charcoal);
+  color: var(--cream);
+  font-family: var(--font-mono);
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Subtle animated noise grain on the whole page */
+  position: relative;
+  /* CRITICAL: do NOT set overflow: hidden on body — it breaks Lenis */
+}
+
+/* Global halftone grain overlay - Static to prevent scroll jitter */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23grain)' opacity='0.035'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.6;
+  mix-blend-mode: overlay;
 }
 
 section {
-  scroll-margin-top: 80px; 
+  scroll-margin-top: 80px;
 }
 
+/* ── TYPOGRAPHY CLASSES ─────────────────────────────────── */
+.font-display  { font-family: var(--font-display); }
+.font-mono-    { font-family: var(--font-mono); }
 
-body {
-  @apply transition-colors duration-300;
+.text-poster {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
 }
 
-/* Light mode */
-body {
-  @apply bg-white text-black;
+.text-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
-/* Dark mode */
-.dark body {
-  @apply bg-gradient-to-br from-zinc-950 via-neutral-900 to-black text-white;
+/* ── KEYFRAMES ──────────────────────────────────────────── */
+
+/* Animated halftone grain shift */
+@keyframes grain-shift {
+  0%, 100% { transform: translate(0, 0); }
+  25%       { transform: translate(-2px, 1px); }
+  50%       { transform: translate(1px, -2px); }
+  75%       { transform: translate(-1px, 2px); }
+}
+
+/* Print-registration jitter for color blocks */
+@keyframes jitter {
+  0%,100%  { transform: translate(0px, 0px); }
+  20%      { transform: translate(-1px, 0.5px); }
+  40%      { transform: translate(1px, -0.5px); }
+  60%      { transform: translate(-0.5px, 1px); }
+  80%      { transform: translate(0.5px, -1px); }
+}
+
+/* Stamp-in: scale + slight blur → crisp */
+@keyframes stamp-in {
+  0%   { transform: scale(1.15); filter: blur(6px); opacity: 0; }
+  60%  { transform: scale(0.97); filter: blur(0px); opacity: 1; }
+  80%  { transform: scale(1.02); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Ink splat: expands from centre */
+@keyframes ink-splat {
+  0%   { transform: scale(1.4); filter: blur(10px); opacity: 0; }
+  50%  { transform: scale(0.95); filter: blur(1px); opacity: 1; }
+  70%  { transform: scale(1.04); filter: blur(0); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Vertical marquee for contact side rails */
+@keyframes marquee-vertical {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+/* Badge spin */
+@keyframes badge-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Typewriter cursor blink */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Breath: very subtle scale pulse for hero panels */
+@keyframes breath {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.008); }
+}
+
+/* Draw border path (used via JS-driven stroke-dashoffset) */
+@keyframes draw-border {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Sticker peel idle bounce */
+@keyframes badge-float {
+  0%,100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50%     { transform: translateY(-4px) rotate(var(--rot, 0deg)); }
+}
+
+/* ── UTILITY CLASSES ────────────────────────────────────── */
+
+/* Poster section label strip */
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.8rem;
+  border: 1.5px solid var(--vermilion);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--vermilion);
+  background: transparent;
+}
+
+/* Silkscreen button */
+.btn-poster {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: 2.5px solid var(--ink);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-poster::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--vermilion);
+  transform: translateY(101%);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-poster:hover::after {
+  transform: translateY(0);
+}
+
+.btn-poster:hover {
+  color: var(--cream);
+}
+
+.btn-poster span { position: relative; z-index: 1; }
+
+.btn-poster:active { transform: scale(0.97); }
+
+/* Vermilion solid button */
+.btn-vermilion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  background: var(--vermilion);
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: 2.5px solid var(--ink);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-vermilion:hover { background: var(--vermilion-2); }
+.btn-vermilion:active { transform: scale(0.97) translateY(1px); animation: stamp-in 0.25s ease; }
+
+/* Sticker badge */
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  background: var(--cream);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  cursor: default;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  animation: badge-float 4s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.sticker:hover {
+  transform: rotate(calc(var(--rot, 0deg) + 3deg)) translateY(-5px) !important;
+  box-shadow: 3px 4px 0 var(--ink);
+  z-index: 10;
+}
+
+/* Jagged tear effect at section top (CSS clip-path) */
+.tear-top::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 40px;
+  background: var(--charcoal);
+  clip-path: polygon(
+    0% 0%, 3% 80%, 6% 20%, 9% 90%, 12% 30%, 15% 70%, 18% 10%,
+    21% 80%, 24% 40%, 27% 100%, 30% 20%, 33% 70%, 36% 0%, 39% 60%,
+    42% 30%, 45% 90%, 48% 10%, 51% 80%, 54% 40%, 57% 100%,
+    60% 20%, 63% 70%, 66% 0%, 69% 80%, 72% 30%, 75% 90%,
+    78% 10%, 81% 70%, 84% 20%, 87% 80%, 90% 30%, 93% 90%,
+    96% 10%, 99% 70%, 100% 0%, 100% 0%, 0% 0%
+  );
+  margin-top: -1px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Custom scrollbar in poster style */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--vermilion); }
+::-webkit-scrollbar-thumb:hover { background: var(--cream); }
+
+/* ── prefers-reduced-motion ─────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  body::after { display: none; }
+}
+
+/* Tickertape Receipt Paper Styles */
+.tickertape-desktop {
+  position: absolute;
+  right: 20px;
+  top: 120px;
+  width: 220px;
+  height: 500px;
+  background: transparent;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+.tickertape-printer-slot {
+  width: 100%;
+  height: 12px;
+  background: var(--ink);
+  border: 2px solid var(--cream);
+  border-radius: 4px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+  position: relative;
+  z-index: 12;
+}
+
+.tickertape-receipt-container {
+  width: 100%;
+  height: 480px;
+  overflow: hidden;
+  position: relative;
+  background: transparent;
+}
+
+.tickertape-receipt-paper {
+  background: #fcfbf5; /* warmer paper white */
+  color: #111; /* receipt ink */
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 1.5rem 0.75rem 3rem 0.75rem;
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.9);
+  border: 1px solid #ddd;
+  border-left: 2px solid #333;
+  border-right: 2px solid #333;
+  position: absolute;
+  width: 100%;
+  min-height: 100%;
+  cursor: grab;
+  transform-origin: top center;
+}
+
+.tickertape-receipt-paper:active {
+  cursor: grabbing;
+}
+
+/* Dotted vertical lines on receipt edges */
+.tickertape-receipt-paper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 6px;
+  width: 1px;
+  border-left: 1px dashed rgba(0,0,0,0.2);
+}
+.tickertape-receipt-paper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 6px;
+  width: 1px;
+  border-left: 1px dashed rgba(0,0,0,0.2);
+}
+
+.tickertape-receipt-jagged-edge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: #fcfbf5;
+  clip-path: polygon(
+    0% 0%, 5% 100%, 10% 0%, 15% 100%, 20% 0%, 25% 100%, 30% 0%, 35% 100%,
+    40% 0%, 45% 100%, 50% 0%, 55% 100%, 60% 0%, 65% 100%, 70% 0%, 75% 100%,
+    80% 0%, 85% 100%, 90% 0%, 95% 100%, 100% 0%
+  );
+  z-index: 5;
+}
+
+.tickertape-line {
+  margin-bottom: 0.6rem;
+  line-height: 1.25;
+  border-bottom: 1px dashed rgba(0,0,0,0.08);
+  padding-bottom: 0.3rem;
+  word-break: break-word;
+}
+
+.tickertape-line-timestamp {
+  font-size: 0.55rem;
+  color: #666;
+  display: block;
+}
+
+.tickertape-line-message {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1199px) {
+  .tickertape-desktop {
+    display: none !important;
+  }
+}
+
+/* Pendulum arm swing keyframe */
+@keyframes pendulum-swing {
+  0%, 100% { transform: rotate(-35deg); }
+  50% { transform: rotate(35deg); }
 }

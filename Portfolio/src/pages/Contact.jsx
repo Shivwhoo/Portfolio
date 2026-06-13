@@ -1,267 +1,530 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useRef, useEffect } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-import { contactSchema } from "../features/contact/contactSchema"; // Adjust path if needed
-import { sendContactMessage } from "../services/contactService"; // Adjust path if needed
+import { contactSchema } from "../features/contact/contactSchema";
+import { sendContactMessage } from "../services/contactService";
+import { slideUp, slideLeft, slideRight } from "../hooks/useScrollAnimation";
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15 },
-  },
-};
+// ─── Vertical marquee ─────────────────────────────────────
+function VerticalMarquee({ text, side = "left" }) {
+  const repeated = Array(8).fill(text).join(" · ");
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        [side]: 0,
+        width: "28px",
+        overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1,
+        pointerEvents: "none",
+      }}
+    >
+      <div
+        style={{
+          writingMode: "vertical-rl",
+          textOrientation: "mixed",
+          transform: side === "right" ? "rotate(180deg)" : "none",
+          animation: `marquee-vertical ${side === "left" ? 18 : 22}s linear infinite`,
+          fontFamily: "var(--font-mono)",
+          fontSize: "0.5rem",
+          letterSpacing: "0.2em",
+          textTransform: "uppercase",
+          color: "rgba(228,64,28,0.4)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {repeated}{repeated}
+      </div>
+    </div>
+  );
+}
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.6, ease: "easeOut" } 
-  },
-};
+// ─── Jagged tear ──────────────────────────────────────────
+function JaggedTear() {
+  return (
+    <div style={{ width: "100%", lineHeight: 0, overflow: "hidden", marginBottom: "-1px", position: "relative", zIndex: 2 }}>
+      <svg viewBox="0 0 1200 40" preserveAspectRatio="none" style={{ width: "100%", height: "40px", display: "block" }} aria-hidden="true">
+        <path
+          d="M0,0 L0,20 L18,5 L36,25 L54,8 L72,28 L90,12 L108,30 L126,6 L144,24 L162,10 L180,28 L198,4 L216,22 L234,8 L252,26 L270,12 L288,28 L306,6 L324,22 L342,10 L360,28 L378,4 L396,20 L414,8 L432,28 L450,14 L468,30 L486,6 L504,24 L522,10 L540,28 L558,4 L576,22 L594,8 L612,26 L630,12 L648,28 L666,6 L684,20 L702,8 L720,28 L738,14 L756,30 L774,6 L792,24 L810,10 L828,26 L846,4 L864,22 L882,8 L900,28 L918,12 L936,28 L954,6 L972,22 L990,10 L1008,28 L1026,4 L1044,20 L1062,8 L1080,26 L1098,12 L1116,28 L1134,6 L1152,22 L1170,10 L1188,28 L1200,16 L1200,0 Z"
+          fill="var(--charcoal)"
+        />
+      </svg>
+    </div>
+  );
+}
 
+// ─── Contact Section ──────────────────────────────────────
 export default function ContactSection() {
-  const [isHovering, setIsHovering] = useState(false);
+  const headlineRef = useRef(null);
+  const headlineInView = useInView(headlineRef, { once: true, margin: "-60px" });
+  const canvasRef = useRef(null);
+  const [showStamp, setShowStamp] = useState(false);
 
-  // Hook Form Integration
+  // Add-on: 3D spin angle array for 4 social links
+  const [spinAngles, setSpinAngles] = useState([0, 0, 0, 0]);
+
+  // Add-on: Haunted email typewriting state
+  const [emailPlaceholder, setEmailPlaceholder] = useState("your@email.com");
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
+
+  const textTimer = useRef(0);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resizeCanvas = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    let animationFrameId;
+    const ctx = canvas.getContext("2d");
+
+    const render = () => {
+      if (ctx) {
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.015)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = "source-over";
+      }
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("resize", resizeCanvas);
+    };
+  }, []);
+
+  // Canvas spray can drawing letters
+  const handleMouseMove = (e) => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      // 1. Draw spray particles
+      for (let i = 0; i < 6; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.random() * 25;
+        const px = x + Math.cos(angle) * radius;
+        const py = y + Math.sin(angle) * radius;
+        const dotSize = Math.random() * 1.8 + 0.4;
+        ctx.fillStyle = Math.random() > 0.4 ? "rgba(228, 64, 28, 0.45)" : "rgba(255, 213, 0, 0.3)";
+        ctx.beginPath();
+        ctx.arc(px, py, dotSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Soft radial mist
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, 30);
+      grad.addColorStop(0, "rgba(228, 64, 28, 0.1)");
+      grad.addColorStop(0.6, "rgba(255, 213, 0, 0.04)");
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, 30, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Spawn letters trail
+      textTimer.current++;
+      if (textTimer.current % 10 === 0) {
+        const words = ["PUNK", "SHIPS", "DIY", "NOISE", "RAW", "LOUD", "ANARCHY"];
+        const randomWord = words[Math.floor(Math.random() * words.length)];
+        ctx.save();
+        ctx.font = "900 12px 'IBM Plex Mono', monospace";
+        ctx.fillStyle = Math.random() > 0.4 ? "rgba(228, 64, 28, 0.65)" : "rgba(255, 213, 0, 0.65)";
+        ctx.translate(x, y);
+        ctx.rotate((Math.random() - 0.5) * 0.8);
+        ctx.fillText(randomWord, 0, 0);
+        ctx.restore();
+      }
+    }
+  };
+
+  // 3D Screaming icons chain reaction
+  const triggerIconSpin = (startIndex) => {
+    setSpinAngles((prev) => {
+      const next = [...prev];
+      next[startIndex] += 720;
+      return next;
+    });
+
+    const propagate = (idx, direction, depth) => {
+      if (depth > 3) return;
+      setTimeout(() => {
+        setSpinAngles((prev) => {
+          const next = [...prev];
+          const nextIdx = (idx + direction + 4) % 4;
+          next[nextIdx] += 720;
+          return next;
+        });
+        propagate((idx + direction + 4) % 4, direction, depth + 1);
+      }, 150);
+    };
+
+    propagate(startIndex, 1, 1);
+    propagate(startIndex, -1, 1);
+  };
+
+  // Haunted email placeholder typing loop
+  useEffect(() => {
+    if (isEmailFocused) {
+      setEmailPlaceholder("your@email.com");
+      return;
+    }
+
+    const fakeEmails = ["anarchy_now@hell.co", "satan@666.com", "copy_paste_god@coder.io", "help_me@campus.edu", "zeitgeist_lead@zeit.com"];
+    let wordIdx = 0;
+    let charIdx = 0;
+    let isDeleting = false;
+    let timer;
+
+    const type = () => {
+      const currentWord = fakeEmails[wordIdx];
+      if (!isDeleting) {
+        setEmailPlaceholder(currentWord.substring(0, charIdx + 1));
+        charIdx++;
+        if (charIdx === currentWord.length) {
+          isDeleting = true;
+          timer = setTimeout(type, 1500); // pause before backspacing
+        } else {
+          timer = setTimeout(type, 90);
+        }
+      } else {
+        setEmailPlaceholder(currentWord.substring(0, charIdx - 1));
+        charIdx--;
+        if (charIdx === 0) {
+          isDeleting = false;
+          wordIdx = (wordIdx + 1) % fakeEmails.length;
+          timer = setTimeout(type, 400); // pause before typing next
+        } else {
+          timer = setTimeout(type, 50);
+        }
+      }
+    };
+
+    timer = setTimeout(type, 2000); // initial delay
+    return () => clearTimeout(timer);
+  }, [isEmailFocused]);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm({
-    resolver: zodResolver(contactSchema),
-  });
+  } = useForm({ resolver: zodResolver(contactSchema) });
 
   const onSubmit = async (data) => {
     try {
       await sendContactMessage(data);
-      toast.success("Payload delivered successfully!");
+      setShowStamp(true);
+      toast.success("Message transmitted!", {
+        style: { background: "var(--vermilion)", color: "var(--cream)", fontFamily: "var(--font-mono)", fontSize: "0.8rem", letterSpacing: "0.1em", border: "2px solid var(--ink)", borderRadius: 0 },
+      });
       reset();
+      setTimeout(() => setShowStamp(false), 5000);
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Transmission failed. Connection lost."
-      );
+      toast.error(error.response?.data?.message || "Transmission failed.", {
+        style: { background: "var(--ink)", color: "var(--cream)", fontFamily: "var(--font-mono)", fontSize: "0.8rem", border: "2px solid var(--vermilion)", borderRadius: 0 },
+      });
     }
   };
 
-  return (
-    <section id="contact" className="py-24 relative overflow-hidden bg-transparent">
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        
-        {/* Section Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="mb-16 md:mb-24 text-center"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-sm bg-indigo-400 animate-pulse" />
-            <span className="text-indigo-400 font-mono text-sm uppercase tracking-widest">System.Comm_Link</span>
-          </div>
-          <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter leading-none mb-4">
-            Initialize <br className="md:hidden" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
-              Connection
-            </span>
-          </h2>
-          <p className="text-zinc-400 font-mono text-sm max-w-xl mx-auto">
-            {">"} Open for collaborations, hackathons, and development opportunities. Send a payload below.
-          </p>
-        </motion.div>
+  const inputStyle = (hasError) => ({
+    width: "100%",
+    padding: "0.875rem 1rem",
+    background: "var(--cream)",
+    color: "var(--ink)",
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.82rem",
+    border: `2px solid ${hasError ? "var(--vermilion)" : "var(--ink)"}`,
+    outline: "none",
+    transition: "box-shadow 0.15s",
+    borderRadius: 0,
+    boxSizing: "border-box",
+  });
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-start">
-          
-          {/* LEFT COLUMN: Contact Details & Terminal */}
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="flex flex-col gap-6"
-          >
-            {/* C++ Code Easter Egg Terminal */}
-            <motion.div variants={itemVariants} className="bg-[#121214]/60 backdrop-blur-xl rounded-2xl border border-white/10 p-6 shadow-xl relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500 opacity-50 group-hover:opacity-100 transition-opacity" />
-              <div className="font-mono text-sm leading-loose">
-                <p className="text-zinc-500 mb-2">// Server configuration</p>
-                <p><span className="text-pink-500">#include</span> <span className="text-green-400">&lt;iostream&gt;</span></p>
-                <p><span className="text-pink-500">using namespace</span> <span className="text-blue-400">std</span>;</p>
-                <br />
-                <p><span className="text-pink-500">struct</span> <span className="text-yellow-300">ContactInfo</span> {'{'}</p>
-                <p className="pl-4"><span className="text-blue-400">string</span> email = <span className="text-green-400">"shivamkishore009@gmail.com"</span>;</p>
-                <p className="pl-4"><span className="text-blue-400">string</span> phone = <span className="text-green-400">"+91-9334947294"</span>;</p>
-                <p className="pl-4"><span className="text-blue-400">string</span> location = <span className="text-green-400">"IIIT Dharwad"</span>;</p>
-                <p>{'};'}</p>
+  const labelStyle = {
+    display: "block",
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.62rem",
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+    color: "rgba(244,237,216,0.5)",
+    marginBottom: "0.4rem",
+  };
+
+  const errStyle = {
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.62rem",
+    color: "var(--vermilion)",
+    marginTop: "0.25rem",
+    letterSpacing: "0.08em",
+  };
+
+  return (
+    <>
+      <JaggedTear />
+
+      <section
+        id="contact"
+        onMouseMove={handleMouseMove}
+        style={{ position: "relative", background: "var(--ink)", overflow: "clip", paddingTop: "1px" }}
+      >
+        {/* Spray paint canvas background */}
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
+
+        <VerticalMarquee text="SHIVAM KISHORE · AVAILABLE FOR HIRE · LET'S BUILD" side="left" />
+        <VerticalMarquee text="OPEN TO WORK · FULL STACK · ENGINEER · BUILDER" side="right" />
+
+        <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "3rem 3rem 4rem", position: "relative", zIndex: 2 }}>
+
+          {/* Headline */}
+          <div style={{ marginBottom: "4rem", textAlign: "center" }}>
+            <motion.span
+              initial={{ opacity: 1, y: 0 }}
+              className="section-label"
+              style={{ marginBottom: "1.5rem", display: "inline-flex" }}
+            >
+              Open Comms
+            </motion.span>
+
+            <motion.h2
+              initial={{ scale: 1, filter: "none", opacity: 1 }}
+              style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "clamp(2.5rem, 8vw, 7rem)", textTransform: "uppercase", letterSpacing: "-0.03em", lineHeight: 0.88, color: "var(--cream)", marginBottom: "0.5rem" }}
+            >
+              Let's Build<br /><span style={{ color: "var(--vermilion)" }}>Something.</span>
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity: 1, y: 0 }}
+              style={{ fontFamily: "var(--font-mono)", fontSize: "0.8rem", color: "rgba(244,237,216,0.35)", letterSpacing: "0.08em", marginTop: "1.25rem" }}
+            >
+              Open for collaborations, hackathons & dev roles · Send a payload below
+            </motion.p>
+          </div>
+
+          {/* Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "3rem", alignItems: "start" }}>
+
+            {/* Direct lines */}
+            <motion.div {...slideLeft}>
+              <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.5rem", textTransform: "uppercase", letterSpacing: "-0.01em", color: "var(--cream)", marginBottom: "1.5rem", borderLeft: "4px solid var(--vermilion)", paddingLeft: "0.75rem" }}>
+                Direct Lines
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                {[
+                  { icon: "✉", label: "Email", val: "shivamkishore009@gmail.com", href: "mailto:shivamkishore009@gmail.com" },
+                  { icon: "◆", label: "GitHub", val: "github.com/Shivwhoo", href: "https://github.com/Shivwhoo" },
+                  { icon: "▲", label: "LinkedIn", val: "in/shivam-kishore-103556329", href: "https://www.linkedin.com/in/shivam-kishore-103556329/" },
+                  { icon: "◉", label: "Phone", val: "+91-9334947294", href: "tel:+919334947294" },
+                ].map(({ icon, label, val, href }, idx) => (
+                  <a
+                    key={label}
+                    href={href}
+                    onClick={(e) => {
+                      if (href.startsWith("http") || href.startsWith("mailto") || href.startsWith("tel")) {
+                        // Allow navigation, but trigger spin first
+                        triggerIconSpin(idx);
+                      }
+                    }}
+                    target={href.startsWith("http") ? "_blank" : undefined}
+                    rel={href.startsWith("http") ? "noreferrer" : undefined}
+                    style={{ display: "flex", alignItems: "flex-start", gap: "1rem", padding: "0.875rem 1rem", background: "rgba(244,237,216,0.03)", border: "1.5px solid rgba(244,237,216,0.08)", textDecoration: "none", transition: "border-color 0.15s, background 0.15s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--vermilion)"; e.currentTarget.style.background = "rgba(228,64,28,0.06)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(244,237,216,0.08)"; e.currentTarget.style.background = "rgba(244,237,216,0.03)"; }}
+                  >
+                    <span style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "32px",
+                      height: "32px",
+                      background: "var(--vermilion)",
+                      color: "var(--ink)",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "1rem",
+                      fontWeight: 900,
+                      borderRadius: "0px",
+                      border: "1.5px dashed var(--ink)",
+                      boxShadow: "inset 0 0 4px rgba(0,0,0,0.5)",
+                      flexShrink: 0,
+                      lineHeight: 1,
+                      transform: `rotate(${label === "Email" ? -4 : label === "GitHub" ? 3 : label === "LinkedIn" ? -2 : 5}deg) rotateY(${spinAngles[idx]}deg)`,
+                      transition: "transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+                    }}>
+                      {icon}
+                    </span>
+                    <div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.58rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(244,237,216,0.3)", marginBottom: "0.15rem" }}>{label}</div>
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "var(--cream)", wordBreak: "break-all" }}>{val}</div>
+                    </div>
+                  </a>
+                ))}
               </div>
             </motion.div>
 
-            {/* Quick Links Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <motion.a 
-                variants={itemVariants}
-                href="mailto:shivamkishore009@gmail.com"
-                className="bg-[#121214]/40 backdrop-blur-lg border border-white/10 rounded-xl p-5 hover:bg-white/5 hover:border-indigo-500/50 transition-all duration-300 group flex flex-col gap-3"
-              >
-                <svg className="w-6 h-6 text-zinc-400 group-hover:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <div>
-                  <h4 className="text-white font-bold text-sm">Email</h4>
-                  <p className="text-zinc-500 text-xs font-mono mt-1 break-all">shivamkishore009@gmail.com</p>
-                </div>
-              </motion.a>
-
-              <motion.a 
-                variants={itemVariants}
-                href="https://github.com/Shivwhoo"
-                target="_blank"
-                rel="noreferrer"
-                className="bg-[#121214]/40 backdrop-blur-lg border border-white/10 rounded-xl p-5 hover:bg-white/5 hover:border-indigo-500/50 transition-all duration-300 group flex flex-col gap-3"
-              >
-                <svg className="w-6 h-6 text-zinc-400 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-                </svg>
-                <div>
-                  <h4 className="text-white font-bold text-sm">GitHub</h4>
-                  <p className="text-zinc-500 text-xs font-mono mt-1">/Shivwhoo</p>
-                </div>
-              </motion.a>
-
-              <motion.a 
-                variants={itemVariants}
-                href="https://www.linkedin.com/in/shivam-kishore-103556329/"
-                target="_blank"
-                rel="noreferrer"
-                className="bg-[#121214]/40 backdrop-blur-lg border border-white/10 rounded-xl p-5 hover:bg-white/5 hover:border-blue-500/50 transition-all duration-300 group flex flex-col gap-3"
-              >
-                <svg className="w-6 h-6 text-zinc-400 group-hover:text-blue-400 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z" />
-                </svg>
-                <div>
-                  <h4 className="text-white font-bold text-sm">LinkedIn</h4>
-                  <p className="text-zinc-500 text-xs font-mono mt-1">/in/shivam-kishore</p>
-                </div>
-              </motion.a>
-
-              <motion.div 
-                variants={itemVariants}
-                className="bg-[#121214]/40 backdrop-blur-lg border border-white/10 rounded-xl p-5 hover:bg-white/5 hover:border-green-500/50 transition-all duration-300 group flex flex-col gap-3 cursor-default"
-              >
-                <svg className="w-6 h-6 text-zinc-400 group-hover:text-green-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                <div>
-                  <h4 className="text-white font-bold text-sm">Phone</h4>
-                  <p className="text-zinc-500 text-xs font-mono mt-1">+91-9334947294</p>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-
-          {/* RIGHT COLUMN: Glassmorphic Form with React Hook Form */}
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative"
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-          >
-            {/* Dynamic Background Glow for Form */}
-            <div className={`absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur-xl transition-opacity duration-500 ${isHovering ? 'opacity-30' : 'opacity-10'}`} />
-            
-            <div className="relative bg-[#121214]/60 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
-              <div className="flex items-center gap-3 mb-8 pb-4 border-b border-white/10">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <h3 className="text-white font-mono uppercase tracking-widest text-sm">Send_Payload</h3>
-              </div>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-                
-                {/* Name */}
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="name" className="text-zinc-400 text-xs font-mono uppercase">User_Name</label>
-                  <input 
-                    type="text" 
-                    id="name"
-                    {...register("name")}
-                    className={`bg-white/5 border ${errors.name ? 'border-red-500' : 'border-white/10'} rounded-lg px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-colors placeholder:text-zinc-600`}
-                    placeholder="John Doe"
-                  />
-                  {errors.name && (
-                    <p className="text-red-400 text-[11px] font-mono mt-1">
-                      {">"} ERR: {errors.name.message}
-                    </p>
+            {/* Form */}
+            <motion.div {...slideRight} style={{ position: "relative" }}>
+              <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.5rem", textTransform: "uppercase", letterSpacing: "-0.01em", color: "var(--cream)", marginBottom: "1.5rem", borderLeft: "4px solid var(--acid)", paddingLeft: "0.75rem" }}>
+                Send a Payload
+              </h3>
+              <form onSubmit={handleSubmit(onSubmit)} style={{ position: "relative", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                <AnimatePresence>
+                  {showStamp && (
+                    <motion.div
+                      initial={{ scale: 3, opacity: 0, rotate: -45 }}
+                      animate={{
+                        scale: 1,
+                        opacity: 1,
+                        rotate: -12,
+                        transition: { type: "spring", damping: 10, stiffness: 100 }
+                      }}
+                      exit={{ opacity: 0, transition: { duration: 0.5 } }}
+                      style={{
+                        position: "absolute",
+                        top: "20%",
+                        left: "5%",
+                        right: "5%",
+                        zIndex: 20,
+                        pointerEvents: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <div style={{
+                        border: "6px double var(--vermilion)",
+                        color: "var(--vermilion)",
+                        fontFamily: "var(--font-display)",
+                        fontSize: "clamp(1.5rem, 5vw, 2.5rem)",
+                        fontWeight: 900,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.15em",
+                        padding: "0.5rem 1rem",
+                        background: "rgba(10, 10, 10, 0.95)",
+                        boxShadow: "0 0 15px rgba(228, 64, 28, 0.4)",
+                        textAlign: "center",
+                        filter: "url(#contact-ink-bleed)",
+                      }}>
+                        TRANSMITTED
+                      </div>
+                    </motion.div>
                   )}
-                </div>
+                </AnimatePresence>
 
-                {/* Email */}
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="email" className="text-zinc-400 text-xs font-mono uppercase">Return_Address (Email)</label>
-                  <input 
-                    type="email" 
-                    id="email"
+                <div>
+                  <label htmlFor="contact-name" style={labelStyle}>Name</label>
+                  <input id="contact-name" type="text" {...register("name")} placeholder="Your name" style={inputStyle(!!errors.name)}
+                    onFocus={(e) => { e.target.style.boxShadow = "0 0 0 2px var(--vermilion)"; }}
+                    onBlur={(e) => { e.target.style.boxShadow = "none"; }}
+                  />
+                  {errors.name && <p style={errStyle}>› {errors.name.message}</p>}
+                </div>
+                <div>
+                  <label htmlFor="contact-email" style={labelStyle}>Email</label>
+                  <input
+                    id="contact-email"
+                    type="email"
                     {...register("email")}
-                    className={`bg-white/5 border ${errors.email ? 'border-red-500' : 'border-white/10'} rounded-lg px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-colors placeholder:text-zinc-600`}
-                    placeholder="john@server.com"
+                    placeholder={emailPlaceholder}
+                    style={inputStyle(!!errors.email)}
+                    onFocus={(e) => {
+                      setIsEmailFocused(true);
+                      e.target.style.boxShadow = "0 0 0 2px var(--vermilion)";
+                    }}
+                    onBlur={(e) => {
+                      setIsEmailFocused(false);
+                      e.target.style.boxShadow = "none";
+                    }}
                   />
-                  {errors.email && (
-                    <p className="text-red-400 text-[11px] font-mono mt-1">
-                      {">"} ERR: {errors.email.message}
-                    </p>
-                  )}
+                  {errors.email && <p style={errStyle}>› {errors.email.message}</p>}
                 </div>
-
-                {/* Message */}
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="message" className="text-zinc-400 text-xs font-mono uppercase">String_Message</label>
-                  <textarea 
-                    id="message"
-                    rows="4"
-                    {...register("message")}
-                    className={`bg-white/5 border ${errors.message ? 'border-red-500' : 'border-white/10'} rounded-lg px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-colors placeholder:text-zinc-600 resize-none`}
-                    placeholder="Enter execution commands..."
-                  ></textarea>
-                  {errors.message && (
-                    <p className="text-red-400 text-[11px] font-mono mt-1">
-                      {">"} ERR: {errors.message.message}
-                    </p>
-                  )}
+                <div>
+                  <label htmlFor="contact-message" style={labelStyle}>Message</label>
+                  <textarea id="contact-message" rows={5} {...register("message")} placeholder="What do you want to build?" style={{ ...inputStyle(!!errors.message), resize: "none" }}
+                    onFocus={(e) => { e.target.style.boxShadow = "0 0 0 2px var(--vermilion)"; }}
+                    onBlur={(e) => { e.target.style.boxShadow = "none"; }}
+                  />
+                  {errors.message && <p style={errStyle}>› {errors.message.message}</p>}
                 </div>
-
-                {/* Submit Button */}
-                <button 
+                <button
+                  id="contact-submit"
                   type="submit"
                   disabled={isSubmitting}
-                  className={`mt-4 group relative w-full px-6 py-4 rounded-lg font-bold tracking-widest uppercase overflow-hidden flex justify-center items-center text-sm transition-all
-                    ${isSubmitting ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed' : 'bg-indigo-500 text-white hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]'}
-                  `}
+                  className={isSubmitting ? "" : "btn-vermilion"}
+                  style={isSubmitting ? {
+                    width: "100%", padding: "1rem", background: "rgba(244,237,216,0.1)", color: "rgba(244,237,216,0.4)",
+                    fontFamily: "var(--font-mono)", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase",
+                    border: "2px solid rgba(244,237,216,0.15)", cursor: "not-allowed"
+                  } : { width: "100%", padding: "1rem" }}
                 >
-                  {!isSubmitting && (
-                    <div className="absolute inset-0 w-full h-full bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
-                  )}
-                  <span className="relative z-10 flex items-center gap-2">
-                    {isSubmitting ? "Executing..." : "Execute_Transmission"}
-                    {!isSubmitting && (
-                      <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
-                    )}
-                  </span>
+                  {isSubmitting ? "Transmitting..." : "Transmit →"}
                 </button>
               </form>
-            </div>
+            </motion.div>
+          </div>
+
+          {/* Footer strip */}
+          <motion.div
+            {...slideUp}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            style={{ marginTop: "4rem", paddingTop: "2rem", borderTop: "1px solid rgba(244,237,216,0.08)", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", alignItems: "center" }}
+          >
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.62rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(244,237,216,0.2)" }}>
+              Shivam Kishore · IIIT Dharwad · 2026
+            </span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.62rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(228,64,28,0.4)" }}>
+              1977 London Punk × 2026 SWE
+            </span>
+            <a href="/Shivam%20Kishore%20CV-MAY.pdf" download="Shivam_Kishore_CV.pdf"
+              style={{ fontFamily: "var(--font-mono)", fontSize: "0.62rem", letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(244,237,216,0.3)", textDecoration: "none", transition: "color 0.15s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--vermilion)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(244,237,216,0.3)")}
+            >
+              Download CV ↓
+            </a>
           </motion.div>
         </div>
+      </section>
 
-      </div>
-    </section>
+      <svg style={{ position: "absolute", width: 0, height: 0 }} aria-hidden="true">
+        <defs>
+          <filter id="contact-ink-bleed">
+            <feGaussianBlur stdDeviation="0.8" result="blur" />
+            <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo" />
+            <feBlend in="SourceGraphic" in2="goo" />
+          </filter>
+        </defs>
+      </svg>
+    </>
   );
 }

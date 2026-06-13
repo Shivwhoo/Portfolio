@@ -1,21 +1,141 @@
 import React, { useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion"; // <-- YEH ZAROORI HAI NAYE PROGRESS BARS KE LIYE
+import { motion } from "framer-motion";
 import "./StatsSection.css";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import axiosInstance from "../../services/axiosInstance";
+import { lineDraw } from "../../hooks/useScrollAnimation";
 
-gsap.registerPlugin(ScrollTrigger);
+// ─── Flip Digit Component ─────────────────────────────────
+function FlipDigit({ char }) {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [displayedChar, setDisplayedChar] = useState(char);
 
+  useEffect(() => {
+    setDisplayedChar(char);
+    setIsFlipped(true);
+    const timer = setTimeout(() => setIsFlipped(false), 350);
+    return () => clearTimeout(timer);
+  }, [char]);
+
+  // Periodic mechanical digit flapping flicker
+  useEffect(() => {
+    const triggerFlicker = () => {
+      // 15% chance to scramble digit every 4s
+      if (Math.random() > 0.85) {
+        setIsFlipped(true);
+        let tickCount = 0;
+        const interval = setInterval(() => {
+          const glyphs = "0123456789X#$@%&";
+          setDisplayedChar(glyphs[Math.floor(Math.random() * glyphs.length)]);
+          tickCount++;
+          if (tickCount > 4) {
+            clearInterval(interval);
+            setDisplayedChar(char);
+            setIsFlipped(false);
+          }
+        }, 60);
+      }
+    };
+
+    const intervalId = setInterval(triggerFlicker, 4000);
+    return () => clearInterval(intervalId);
+  }, [char]);
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: "28px",
+        height: "44px",
+        perspective: "200px",
+        display: "inline-block",
+        margin: "0 2px",
+      }}
+      onMouseEnter={() => {
+        setIsFlipped(true);
+        setTimeout(() => setIsFlipped(false), 350);
+      }}
+    >
+      <motion.div
+        animate={isFlipped ? { rotateX: 180 } : { rotateX: 0 }}
+        transition={{ duration: 0.35, ease: "easeInOut" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          transformStyle: "preserve-3d",
+          position: "relative",
+        }}
+      >
+        {/* Front */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "var(--ink)",
+            color: "var(--cream)",
+            border: "2px solid var(--vermilion)",
+            fontFamily: "var(--font-mono)",
+            fontWeight: 800,
+            fontSize: "1.4rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backfaceVisibility: "hidden",
+            borderRadius: "3px",
+            boxShadow: "inset 0 -8px 1px rgba(0,0,0,0.5)",
+          }}
+        >
+          {displayedChar}
+          <div style={{ position: "absolute", left: 0, right: 0, top: "50%", height: "1px", background: "rgba(244,237,216,0.15)" }} />
+        </div>
+
+        {/* Back */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "var(--ink)",
+            color: "var(--cream)",
+            border: "2px solid var(--vermilion)",
+            fontFamily: "var(--font-mono)",
+            fontWeight: 800,
+            fontSize: "1.4rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backfaceVisibility: "hidden",
+            transform: "rotateX(180deg)",
+            borderRadius: "3px",
+            boxShadow: "inset 0 8px 1px rgba(0,0,0,0.5)",
+          }}
+        >
+          {displayedChar}
+          <div style={{ position: "absolute", left: 0, right: 0, top: "50%", height: "1px", background: "rgba(244,237,216,0.15)" }} />
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ─── Flip Counter Component ───────────────────────────────
+function FlipCounter({ value }) {
+  const digits = String(value).split("");
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: "1px" }}>
+      {digits.map((char, idx) => (
+        <FlipDigit key={idx} char={char} />
+      ))}
+    </div>
+  );
+}
+
+// ─── StatsSection Component ───────────────────────────────
 const StatsSection = () => {
   const containerRef = useRef();
-  const [activeCard, setActiveCard] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
 
-  // =====================================
-  // LEETCODE STATES
-  // =====================================
+  // LeetCode States
   const [totalLCQ, setTotalLCQ] = useState(0);
   const [easyLCQ, setEasyLCQ] = useState(0);
   const [mediumLCQ, setMediumLCQ] = useState(0);
@@ -25,9 +145,7 @@ const StatsSection = () => {
   const [lcContributionPoints, setLcContributionPoints] = useState(0);
   const [lcBadges, setLcBadges] = useState([]);
 
-  // =====================================
-  // CODEFORCES STATES
-  // =====================================
+  // Codeforces States
   const [cfHandle, setCfHandle] = useState("Loading...");
   const [cfRating, setCfRating] = useState(0);
   const [cfMaxRating, setCfMaxRating] = useState(0);
@@ -38,9 +156,7 @@ const StatsSection = () => {
   const [cfBestRank, setCfBestRank] = useState("N/A");
   const [cfTotalSolved, setCfTotalSolved] = useState(0);
 
-  // =====================================
-  // GITHUB STATES
-  // =====================================
+  // GitHub States
   const [ghUsername, setGhUsername] = useState("Loading...");
   const [ghName, setGhName] = useState("");
   const [ghAvatar, setGhAvatar] = useState("");
@@ -51,17 +167,17 @@ const StatsSection = () => {
   const [ghTotalForks, setGhTotalForks] = useState(0);
   const [ghLanguages, setGhLanguages] = useState({});
 
-  // Yahan apna handle update kar lena
   const codeforcesHandle = "Shivwhoo";
   const githubHandle = "Shivwhoo";
 
+  // Data fetching
   useEffect(() => {
     const fetchStatsData = async () => {
       try {
         const response = await axiosInstance.get(`/stats/dashboard`);
         const statsData = response.data.data;
 
-        // 1. Setup LeetCode Data
+        // LeetCode Setup
         if (statsData.leetcode) {
           const lc = statsData.leetcode;
           setTotalLCQ(lc.totalSolved || 0);
@@ -71,13 +187,12 @@ const StatsSection = () => {
           setLcRanking(lc.ranking || 0);
           setLcAcceptanceRate(lc.acceptanceRate || 0);
           setLcContributionPoints(lc.contestRating || 0);
-
           if (lc.badges && lc.badges.length > 0) {
             setLcBadges(lc.badges);
           }
         }
 
-        // 2. Setup Codeforces Data
+        // Codeforces Setup
         if (statsData.codeforces) {
           const cf = statsData.codeforces;
           setCfHandle(cf.handle || "Unknown");
@@ -91,7 +206,7 @@ const StatsSection = () => {
           setCfTotalSolved(cf.totalSolved || 0);
         }
 
-        // 3. Setup Github Data
+        // GitHub Setup
         if (statsData.github) {
           const gh = statsData.github;
           setGhUsername(gh.username || "Unknown");
@@ -108,9 +223,6 @@ const StatsSection = () => {
         console.error("Error fetching stats data:", error);
       } finally {
         setDataLoaded(true);
-        setTimeout(() => {
-          ScrollTrigger.refresh();
-        }, 150);
       }
     };
 
@@ -120,7 +232,7 @@ const StatsSection = () => {
   useGSAP(
     () => {
       gsap.fromTo(
-        ".glass-module",
+        ".poster-stats-card",
         {
           y: 50,
           opacity: 0,
@@ -128,13 +240,9 @@ const StatsSection = () => {
         {
           y: 0,
           opacity: 1,
-          duration: 1,
-          stagger: 0.2,
-          ease: "power4.out",
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top 80%",
-          },
+          duration: 0.8,
+          stagger: 0.15,
+          ease: "power3.out",
         },
       );
     },
@@ -142,469 +250,239 @@ const StatsSection = () => {
   );
 
   return (
-    <div id="stats" className="stats-dashboard-container" ref={containerRef}>
-      <div className="header-group">
-        <h2 className="section-header">
-          CODING <span className="highlight">COMMAND CENTER</span>
-        </h2>
-        <p className="text-zinc-400 mt-2 font-mono">
-          Real-time competitive programming & dev stats
-        </p>
-      </div>
-
-      <div
-        className={`dashboard-grid ${activeCard ? "has-active" : ""}`}
-        onMouseLeave={() => setActiveCard(null)}
-      >
-        {/* ==================== LEETCODE MODULE ==================== */}
-        <div
-          className={`glass-module ${activeCard === "lc" ? "expanded" : activeCard ? "collapsed" : ""}`}
-          onMouseEnter={() => setActiveCard("lc")}
-          onClick={() => setActiveCard(activeCard === "lc" ? null : "lc")}
-        >
-          <div className="view-compact">
-            <div className="big-logo-container">
-              <svg viewBox="0 0 24 24" fill="white" className="huge-logo">
-                <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.541l5.967 5.68c.8.761 2.077.761 2.877 0l5.611-5.343a1.36 1.36 0 0 0 0-1.921 1.362 1.362 0 0 0-1.922 0l-4.65 4.427a.496.496 0 0 1-.72 0l-5.966-5.68a3.166 3.166 0 0 1-.871-1.377 3.016 3.016 0 0 1-.145-1.597 3.253 3.253 0 0 1 .655-1.287 3.204 3.204 0 0 1 .482-.49L7.18 8.16l4.424-4.737a.496.496 0 0 1 .72 0l3.852 4.126a1.362 1.362 0 0 0 1.922 0 1.362 1.362 0 0 0 0-1.921L14.246.438A1.374 1.374 0 0 0 13.483 0zm5.105 10.103c-.663 0-1.2.537-1.2 1.2s.537 1.2 1.2 1.2h4.008c.663 0 1.2-.537 1.2-1.2s-.537-1.2-1.2-1.2h-4.008z" />
-              </svg>
-            </div>
-
-            <div className="compact-text-group">
-              <div className="platform-title">LEETCODE.SYS</div>
-              <div className="rank-tag">
-                Rank: #{lcRanking > 0 ? lcRanking : "Loading..."}
-              </div>
-            </div>
-
-            <div className="main-display lc-split">
-              <div className="progress-ring">
-                <svg viewBox="0 0 100 100">
-                  <circle className="ring-bg" cx="50" cy="50" r="45" />
-                  <circle
-                    className="ring-meter lc-meter"
-                    cx="50"
-                    cy="50"
-                    r="45"
-                  />
-                </svg>
-                <div className="ring-text">
-                  <span className="big-num">
-                    {totalLCQ > 0 ? totalLCQ : "0"}
-                  </span>
-                  <span className="label">SOLVED</span>
-                </div>
-              </div>
-
-              <div className="bars-container">
-                <div className="bar-row">
-                  <span className="bar-label">EASY</span>
-                  <div className="bar-bg">
-                    <div
-                      className="bar-fill easy-fill"
-                      style={{ width: "60%" }}
-                    ></div>
-                  </div>
-                  <span className="bar-val">
-                    {easyLCQ > 0 ? easyLCQ : "--"}
-                  </span>
-                </div>
-                <div className="bar-row">
-                  <span className="bar-label">MED</span>
-                  <div className="bar-bg">
-                    <div
-                      className="bar-fill med-fill"
-                      style={{ width: "35%" }}
-                    ></div>
-                  </div>
-                  <span className="bar-val">
-                    {mediumLCQ > 0 ? mediumLCQ : "--"}
-                  </span>
-                </div>
-                <div className="bar-row">
-                  <span className="bar-label">HARD</span>
-                  <div className="bar-bg">
-                    <div
-                      className="bar-fill hard-fill"
-                      style={{ width: "10%" }}
-                    ></div>
-                  </div>
-                  <span className="bar-val">
-                    {hardLCQ > 0 ? hardLCQ : "--"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="module-footer lc-footer">
-              <div className="footer-stat">
-                Acceptance <strong>{lcAcceptanceRate}%</strong>
-              </div>
-            </div>
-          </div>
-
-          <div className="view-expanded">
-            <div className="exp-header">
-              <h2>
-                LEETCODE.SYS //{" "}
-                <span className="highlight">DETAILED_ANALYSIS</span>
-              </h2>
-            </div>
-
-            <div className="exp-content">
-              <div className="exp-stats-box">
-                <p>
-                  Global Ranking:{" "}
-                  <strong className="highlight">
-                    #{lcRanking > 0 ? lcRanking : "0"}
-                  </strong>
-                </p>
-                <p>
-                  Contest Rating:{" "}
-                  <strong>
-                    {lcContributionPoints > 0 ? lcContributionPoints : "0"}
-                  </strong>
-                </p>
-                <div className="mt-8">
-                  <p className="log-line"> {">"} STATUS: ACTIVE SOLVER</p>
-                  <p className="log-line">
-                    {" "}
-                    {">"} FOCUS: DATA STRUCTURES & ALGORITHMS
-                  </p>
-                  <p className="log-line success">
-                    {" "}
-                    {">"} CONSISTENCY: OPTIMAL
-                  </p>
-                </div>
-              </div>
-
-              <div className="terminal-log flex flex-col">
-                <p className="log-line mb-4 font-bold border-b border-zinc-700 pb-2">
-                  {" "}
-                  {">"} ACQUIRED BADGES_
-                </p>
-
-                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                  {lcBadges.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-4 mt-2">
-                      {lcBadges.map((badge, index) => {
-                        const iconUrl = badge.icon.startsWith("/")
-                          ? `https://leetcode.com${badge.icon}`
-                          : badge.icon;
-
-                        return (
-                          <div
-                            key={badge.id || index}
-                            className="flex flex-col items-center justify-center p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition"
-                          >
-                            <img
-                              src={iconUrl}
-                              alt={badge.displayName}
-                              className="w-16 h-16 object-contain drop-shadow-lg mb-2"
-                            />
-                            <span className="text-xs text-center font-mono text-zinc-300 leading-tight">
-                              {badge.displayName}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <p className="text-zinc-500 text-sm mt-4 italic">
-                      No badges acquired yet.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+    <section
+      id="stats"
+      ref={containerRef}
+      style={{
+        padding: "3.5rem 2rem",
+        background: "var(--charcoal)",
+        position: "relative",
+        overflow: "clip",
+      }}
+    >
+      <div style={{ maxWidth: "1100px", margin: "0 auto", position: "relative", zIndex: 1 }}>
+        
+        {/* Header */}
+        <div style={{ marginBottom: "2.5rem" }}>
+          <span className="section-label" style={{ marginBottom: "1rem", display: "inline-flex" }}>
+            The Terminal
+          </span>
+          <h2
+            style={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 700,
+              fontSize: "clamp(3rem, 9vw, 7rem)",
+              textTransform: "uppercase",
+              letterSpacing: "-0.03em",
+              lineHeight: 0.9,
+              color: "var(--cream)",
+              marginTop: "0.5rem",
+            }}
+          >
+            Coding<br />
+            <span style={{ color: "var(--vermilion)" }}>Command Center</span>
+          </h2>
+          <p
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "0.7rem",
+              color: "rgba(244,237,216,0.35)",
+              letterSpacing: "0.1em",
+              marginTop: "1rem",
+            }}
+          >
+            Real-time competitive programming & dev stats
+          </p>
         </div>
 
-        {/* ==================== CODEFORCES MODULE ==================== */}
-        <div
-          className={`glass-module ${activeCard === "cf" ? "expanded" : activeCard ? "collapsed" : ""}`}
-          onMouseEnter={() => setActiveCard("cf")}
-          onClick={() => setActiveCard(activeCard === "cf" ? null : "cf")}
-        >
-          <div className="view-compact">
-            <div className="big-logo-container cf-bars-wrapper">
-              <div className="cf-big-bar yellow"></div>
-              <div className="cf-big-bar blue"></div>
-              <div className="cf-big-bar red"></div>
+        {/* Divider */}
+        <motion.div
+          {...lineDraw}
+          style={{ ...lineDraw.style, height: "2px", background: "var(--vermilion)", transformOrigin: "left", marginBottom: "2.5rem" }}
+        />
+
+        {/* Grid */}
+        <div className="stats-brutalist-grid">
+          {/* ==================== LEETCODE CARD ==================== */}
+          <div className="poster-stats-card card-lc">
+            <div className="card-header-bar bar-lc">
+              <span className="card-header-title">LEETCODE.SYS</span>
+              <span className="card-header-tag">#{lcRanking > 0 ? lcRanking : "..."}</span>
             </div>
-
-            <div className="compact-text-group">
-              <div className="platform-title">CODEFORCES.EXE</div>
-              <div className="rank-tag">
-                {cfRank !== "UNRATED" ? cfRank.toUpperCase() : "UNRATED"}
-              </div>
-            </div>
-
-            <div className="hero-section">
-              <h2 className="hero-rating cf-color">{cfRating || "---"}</h2>
-              <p className="hero-sub">MAX RATING: {cfMaxRating || "---"}</p>
-            </div>
-
-            <div className="stats-mini-grid">
-              <div className="mini-box">
-                <span>SOLVED</span>
-                <strong>{cfTotalSolved}</strong>
-              </div>
-              <div className="mini-box">
-                <span>CONTESTS</span>
-                <strong>{cfContestsAttended}</strong>
-              </div>
-            </div>
-
-            <a
-              href={`https://codeforces.com/profile/${codeforcesHandle}`}
-              target="_blank"
-              rel="noreferrer"
-              className="action-btn"
-            >
-              ACCESS_PROFILE _
-            </a>
-          </div>
-
-          <div className="view-expanded">
-            <div className="exp-header">
-              <h2>
-                CODEFORCES.EXE // <span className="cf-color">{cfHandle}</span>
-              </h2>
-            </div>
-
-            <div className="exp-content">
-              <div className="exp-stats-box">
-                <p>
-                  Current Rating:{" "}
-                  <strong className="cf-color">{cfRating || "0"}</strong>
-                </p>
-                <p>
-                  Max Rank:{" "}
-                  <strong className="cf-color">
-                    {cfMaxRank !== "N/A" ? cfMaxRank.toUpperCase() : "N/A"}
-                  </strong>
-                </p>
-                <div className="mt-8">
-                  <p className="log-line">
-                    {" "}
-                    {">"} TOTAL SOLVED: {cfTotalSolved}
-                  </p>
-                  <p className="log-line">
-                    {" "}
-                    {">"} CONTESTS ATTENDED: {cfContestsAttended}
-                  </p>
-                  <p className="log-line success"> {">"} STATUS: CONNECTED</p>
-                </div>
+            <div className="card-content-body">
+              <div className="card-hero-metric" style={{ marginBottom: "1.25rem" }}>
+                <FlipCounter value={totalLCQ > 0 ? totalLCQ : 0} />
+                <span className="metric-label">Solved</span>
               </div>
 
-              <div className="terminal-log flex flex-col justify-center">
-                <p className="log-line mb-4 font-bold border-b border-zinc-700 pb-2">
-                  {" "}
-                  {">"} CONTEST_DIAGNOSTICS_
-                </p>
-                <div className="space-y-4">
-                  <p className="log-line">
-                    {" "}
-                    {">"} BEST_RANK:{" "}
-                    <span className="text-white">{cfBestRank}</span>
-                  </p>
-                  <p className="log-line">
-                    {" "}
-                    {">"} MAX_RATING_ACHIEVED:{" "}
-                    <span className="text-white">{cfMaxRating}</span>
-                  </p>
-                  <p className="log-line">
-                    {" "}
-                    {">"} CONTRIBUTION_SCORE:{" "}
-                    <span className="text-white">{cfContribution}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ==================== GITHUB MODULE ==================== */}
-        <div
-          className={`glass-module ${activeCard === "gh" ? "expanded" : activeCard ? "collapsed" : ""}`}
-          onMouseEnter={() => setActiveCard("gh")}
-          onClick={() => setActiveCard(activeCard === "gh" ? null : "gh")}
-        >
-          {/* COMPACT VIEW */}
-          <div className="view-compact">
-            <div className="big-logo-container">
-              <svg viewBox="0 0 24 24" fill="white" className="huge-logo">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-              </svg>
-            </div>
-
-            <div className="compact-text-group">
-              <div className="platform-title">GITHUB.SYS</div>
-              <div className="rank-tag">{ghName || "Developer"}</div>
-            </div>
-
-            <div className="hero-section">
-              <h2 className="hero-rating" style={{ color: "#fff" }}>
-                {ghPublicRepos}
-              </h2>
-              <p className="hero-sub">PUBLIC REPOSITORIES</p>
-            </div>
-
-            <div className="stats-mini-grid">
-              <div className="mini-box">
-                <span>STARS</span>
-                <strong>{ghTotalStars}</strong>
-              </div>
-              <div className="mini-box">
-                <span>FOLLOWERS</span>
-                <strong>{ghFollowers}</strong>
-              </div>
-            </div>
-
-            <a
-              href={`https://github.com/${githubHandle}`}
-              target="_blank"
-              rel="noreferrer"
-              className="action-btn !border-white/30 !text-white hover:!bg-white/10 hover:!shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-            >
-              VIEW_GITHUB _
-            </a>
-          </div>
-
-          {/* EXPANDED VIEW (MAGICAL UPGRADE) */}
-          <div className="view-expanded">
-            <div className="exp-header flex items-center justify-between border-b border-white/10 pb-4 mb-6">
-              <h2 className="text-2xl font-black text-white m-0">
-                GITHUB.SYS //{" "}
-                <span className="text-indigo-400">{ghUsername}</span>
-              </h2>
-              {/* Blinking Live Status */}
-              <div className="flex gap-2 items-center">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                </span>
-                <span className="text-[10px] text-green-400 font-mono tracking-widest uppercase">
-                  Live_Node
-                </span>
-              </div>
-            </div>
-
-            <div className="exp-content flex gap-6 h-full">
-              {/* LEFT BOX: Avatar & Bio */}
-              <div className="exp-stats-box flex-1 bg-[#121214]/60 border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden group">
-                {/* Cyberpunk Hover Scanline Effect */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/10 to-transparent -translate-y-full group-hover:animate-[scan_2s_ease-in-out_infinite] pointer-events-none" />
-
-                <div className="relative mb-6">
-                  {/* Rotating Holographic Rings */}
-                  <div className="absolute -inset-3 rounded-full border border-indigo-500/30 border-t-transparent border-b-transparent animate-[spin_4s_linear_infinite]" />
-                  <div className="absolute -inset-5 rounded-full border border-purple-500/20 border-l-transparent border-r-transparent animate-[spin_6s_linear_infinite_reverse]" />
-
-                  {ghAvatar ? (
-                    <img
-                      src={ghAvatar}
-                      alt="Github Avatar"
-                      className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-white/20 shadow-[0_0_20px_rgba(129,140,248,0.3)] relative z-10 object-cover"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/10 flex items-center justify-center relative z-10 text-white/50 font-mono">
-                      N/A
-                    </div>
-                  )}
-                </div>
-
-                <p className="text-zinc-300 font-sans text-[0.9rem] italic mb-6 max-w-[260px] leading-relaxed relative z-10">
-                  <span className="text-indigo-400 font-bold font-mono not-italic mr-1">
-                    {">"}
-                  </span>
-                  "{ghBio}"
-                </p>
-
-                {/* Dashboard style Repo & Forks counter */}
-                <div className="w-full grid grid-cols-2 gap-3 mt-auto relative z-10">
-                  <div className="bg-[#0a0a0c]/80 border border-white/5 rounded-xl p-3 flex flex-col items-center hover:border-indigo-500/40 transition-colors">
-                    <span className="block text-[9px] text-zinc-500 font-mono tracking-widest uppercase mb-1">
-                      Total_Forks
-                    </span>
-                    <strong className="text-white text-lg">
-                      {ghTotalForks}
-                    </strong>
+              <div className="progress-bars-container">
+                <div className="stat-row">
+                  <span className="stat-label">EASY</span>
+                  <div className="stat-track">
+                    <div className="stat-fill fill-easy" style={{ width: totalLCQ > 0 ? `${(easyLCQ / totalLCQ) * 100}%` : "0%" }}></div>
                   </div>
-                  <div className="bg-[#0a0a0c]/80 border border-white/5 rounded-xl p-3 flex flex-col items-center hover:border-purple-500/40 transition-colors">
-                    <span className="block text-[9px] text-zinc-500 font-mono tracking-widest uppercase mb-1">
-                      Public_Repos
-                    </span>
-                    <strong className="text-white text-lg">
-                      {ghPublicRepos}
-                    </strong>
+                  <span className="stat-value">{easyLCQ > 0 ? easyLCQ : "--"}</span>
+                </div>
+                <div className="stat-row">
+                  <span className="stat-label">MED</span>
+                  <div className="stat-track">
+                    <div className="stat-fill fill-medium" style={{ width: totalLCQ > 0 ? `${(mediumLCQ / totalLCQ) * 100}%` : "0%" }}></div>
                   </div>
+                  <span className="stat-value">{mediumLCQ > 0 ? mediumLCQ : "--"}</span>
+                </div>
+                <div className="stat-row">
+                  <span className="stat-label">HARD</span>
+                  <div className="stat-track">
+                    <div className="stat-fill fill-hard" style={{ width: totalLCQ > 0 ? `${(hardLCQ / totalLCQ) * 100}%` : "0%" }}></div>
+                  </div>
+                  <span className="stat-value">{hardLCQ > 0 ? hardLCQ : "--"}</span>
                 </div>
               </div>
 
-              {/* RIGHT BOX: Languages with Progress Bars */}
-              <div className="terminal-log flex-1 bg-[#121214]/60 border border-white/5 rounded-2xl p-6 flex flex-col relative overflow-hidden">
-                <p className="log-line mb-5 font-bold border-b border-white/5 pb-3 flex justify-between items-center text-sm">
-                  <span className="text-zinc-300 font-mono uppercase">
-                    {">"} Tech_Stack_Analysis
-                  </span>
-                  <span className="text-[10px] text-indigo-400 font-mono tracking-widest">
-                    TOP_5
-                  </span>
-                </p>
+              <div className="metrics-summary-grid">
+                <div className="summary-box">
+                  <span className="box-label">ACCEPTANCE</span>
+                  <strong className="box-value">{lcAcceptanceRate}%</strong>
+                </div>
+                <div className="summary-box">
+                  <span className="box-label">CONTEST RATING</span>
+                  <strong className="box-value">{lcContributionPoints > 0 ? Math.round(lcContributionPoints) : "0"}</strong>
+                </div>
+              </div>
 
-                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+              <div className="badges-compact-footer">
+                <span className="footer-small-title">{">"} Badges:</span>
+                <div className="badges-mini-list">
+                  {lcBadges.slice(0, 4).map((badge, idx) => (
+                    <span key={badge.id || idx} className="mini-badge-pill">
+                      {badge.displayName}
+                    </span>
+                  ))}
+                  {lcBadges.length === 0 && <span className="mini-badge-pill italic">None</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ==================== CODEFORCES CARD ==================== */}
+          <div className="poster-stats-card card-cf">
+            <div className="card-header-bar bar-cf">
+              <span className="card-header-title">CODEFORCES.EXE</span>
+              <span className="card-header-tag">{cfRank.toUpperCase()}</span>
+            </div>
+            <div className="card-content-body">
+              <div className="card-hero-metric" style={{ marginBottom: "1.25rem" }}>
+                <FlipCounter value={cfRating > 0 ? cfRating : 0} />
+                <span className="metric-label">Rating</span>
+              </div>
+
+              <div className="metrics-flat-list">
+                <div className="metric-item">
+                  <span className="item-label">MAX RATING</span>
+                  <span className="item-value highlight-cf">{cfMaxRating || "---"}</span>
+                </div>
+                <div className="metric-item">
+                  <span className="item-label">MAX RANK</span>
+                  <span className="item-value">{cfMaxRank !== "N/A" ? cfMaxRank.toUpperCase() : "---"}</span>
+                </div>
+                <div className="metric-item">
+                  <span className="item-label">TOTAL SOLVED</span>
+                  <span className="item-value">{cfTotalSolved || "--"}</span>
+                </div>
+                <div className="metric-item">
+                  <span className="item-label">CONTESTS</span>
+                  <span className="item-value">{cfContestsAttended || "--"}</span>
+                </div>
+                <div className="metric-item">
+                  <span className="item-label">BEST RANK</span>
+                  <span className="item-value">{cfBestRank}</span>
+                </div>
+              </div>
+
+              <div className="card-action-container">
+                <a
+                  href={`https://codeforces.com/profile/${codeforcesHandle}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="sticker-action-btn btn-cf-style"
+                >
+                  ACCESS_PROFILE _
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* ==================== GITHUB CARD ==================== */}
+          <div className="poster-stats-card card-gh">
+            <div className="card-header-bar bar-gh">
+              <span className="card-header-title">GITHUB.SYS</span>
+              <span className="card-header-tag">{ghUsername}</span>
+            </div>
+            <div className="card-content-body">
+              <div className="github-profile-header">
+                {ghAvatar && <img src={ghAvatar} alt="Github Avatar" className="github-mini-avatar" />}
+                <div className="github-profile-meta">
+                  <span className="github-name">{ghName || "Developer"}</span>
+                  <span className="github-bio">"{ghBio.substring(0, 50)}..."</span>
+                </div>
+              </div>
+
+              <div className="card-hero-metric" style={{ marginTop: "1rem", marginBottom: "0.5rem" }}>
+                <FlipCounter value={ghPublicRepos > 0 ? ghPublicRepos : 0} />
+                <span className="metric-label">Repositories</span>
+              </div>
+
+              <div className="metrics-summary-grid" style={{ marginTop: "0.5rem" }}>
+                <div className="summary-box">
+                  <span className="box-label">STARS</span>
+                  <strong className="box-value">{ghTotalStars}</strong>
+                </div>
+                <div className="summary-box">
+                  <span className="box-label">FOLLOWERS</span>
+                  <strong className="box-value">{ghFollowers}</strong>
+                </div>
+                <div className="summary-box">
+                  <span className="box-label">FORKS</span>
+                  <strong className="box-value">{ghTotalForks}</strong>
+                </div>
+              </div>
+
+              <div className="languages-bars-container" style={{ marginTop: "1rem" }}>
+                <span className="footer-small-title">{">"} Top Languages:</span>
+                <div className="languages-stretcher">
                   {Object.keys(ghLanguages).length > 0 ? (
-                    <div className="space-y-5">
-                      {Object.entries(ghLanguages)
-                        .sort(([, a], [, b]) => b - a)
-                        .slice(0, 5)
-                        .map(([lang, count], index, arr) => {
-                          const maxCount = arr[0][1];
-                          const percent = Math.max((count / maxCount) * 100, 5);
-
-                          return (
-                            <div key={index} className="group/lang">
-                              <div className="flex justify-between items-end mb-1.5">
-                                <span className="text-zinc-300 font-mono text-[11px] uppercase flex items-center gap-2">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 group-hover/lang:animate-pulse"></span>
-                                  {lang}
-                                </span>
-                                <span className="text-zinc-500 font-mono text-[10px]">
-                                  {count} Repos
-                                </span>
-                              </div>
-                              <div className="w-full h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/5">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${percent}%` }}
-                                  transition={{
-                                    duration: 1,
-                                    delay: 0.5 + index * 0.1,
-                                    ease: "easeOut",
-                                  }}
-                                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full relative shadow-[0_0_10px_rgba(129,140,248,0.5)]"
-                                >
-                                  <div className="absolute top-0 right-0 bottom-0 w-2 bg-white/40 rounded-full blur-[1px]"></div>
-                                </motion.div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
+                    Object.entries(ghLanguages)
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 3)
+                      .map(([lang, count]) => (
+                        <div key={lang} className="lang-bar-row">
+                          <span className="lang-label">{lang}</span>
+                          <div className="lang-bar-track">
+                            <div className="lang-bar-fill" style={{ width: `${Math.min((count / 15) * 100, 100)}%` }}></div>
+                          </div>
+                        </div>
+                      ))
                   ) : (
-                    <div className="flex items-center gap-3 mt-4 text-zinc-500 font-mono text-xs">
-                      <div className="w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                      Scanning memory banks...
-                    </div>
+                    <span className="footer-small-title italic">Scanning directories...</span>
                   )}
                 </div>
+              </div>
+
+              <div className="card-action-container">
+                <a
+                  href={`https://github.com/${githubHandle}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="sticker-action-btn btn-gh-style"
+                >
+                  VIEW_GITHUB _
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -1,50 +1,75 @@
-import { motion } from "framer-motion";
-// Link import hata sakte ho agar ab hum IDs use kar rahe hain
-import { fadeInUp, staggerContainer } from "../lib/motionVariants";
+import { motion, useScroll, useTransform } from "framer-motion";
 import ProjectsSection from "./Project";
 import HeroSection from "./Hero";
 import TechStack from "./Techstack";
 import ContactSection from "./Contact";
 import StatsSection from "../features/stats/StatsSection";
-import InteractiveBackground from "../components/InteractiveBackground";
-import AboutMe from '../features/about/AboutMe'
+import PosterBackground from "../components/InteractiveBackground";
+import AboutMe from "../features/about/AboutMe";
+import Timeline from "../features/about/Timeline";
+
+// ── Section wrapper — keeps layout static to avoid scroll jitters ──
+function SectionReveal({ children, id, style = {} }) {
+  return (
+    <section
+      id={id}
+      style={{
+        borderTop: "1px solid rgba(244,237,216,0.06)",
+        ...style,
+      }}
+    >
+      {children}
+    </section>
+  );
+}
 
 export default function Home() {
-  const name = "Shivam Kishore";
-
   return (
-    <div className="relative min-h-screen text-white overflow-x-hidden">
-      {/* GLOBAL BACKGROUND */}
-      <InteractiveBackground />
+    <div
+      style={{
+        position: "relative",
+        color: "var(--cream)",
+        background: "var(--charcoal)",
+        // NO overflow: hidden here — it kills Lenis
+      }}
+    >
+      {/* Global poster background */}
+      <PosterBackground />
 
-      {/* MAIN CONTENT */}
-      <div className="relative z-10">
-        
-        {/* ================= HERO ================= */}
-        {/* ID "home" add kiya yahan */}
+      {/* Main content — z-index above background */}
+      <div style={{ position: "relative", zIndex: 1 }}>
 
-        <HeroSection/>
-        
-        <TechStack />
+        {/* ── HERO ── */}
+        <HeroSection />
 
-        {/* Baki sections ko IDs ke saath wrap kiya */}
-        <section id="stats" className="py-24 px-6 relative z-10">
-          <StatsSection />
-        </section>
-
-        <section id="about">
+        {/* ── ABOUT ── */}
+        <SectionReveal id="about">
           <AboutMe />
-        </section>
+        </SectionReveal>
 
-        <section id="projects">
+        {/* ── TECH STACK ── */}
+        <SectionReveal id="tech-stack">
+          <TechStack />
+        </SectionReveal>
+
+        {/* ── STATS ── */}
+        <SectionReveal
+          id="stats"
+          style={{ borderTop: "1px solid rgba(244,237,216,0.06)" }}
+        >
+          <StatsSection />
+        </SectionReveal>
+
+        {/* ── PROJECTS ── */}
+        <SectionReveal id="projects">
           <ProjectsSection />
-        </section>
+        </SectionReveal>
 
+        {/* ── TIMELINE ── */}
+        <Timeline />
 
-
-        <section id="contact">
-          <ContactSection />
-        </section>
+        {/* ── CONTACT ── */}
+        <ContactSection />
 
       </div>
     </div>

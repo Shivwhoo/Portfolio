@@ -2,189 +2,368 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
-  { name: "Home", href: "#home", code: "cd ~" },
-  { name: "Stack", href: "#tech-stack", code: "ls ./tech" }, // Added Tech Stack link
-  { name: "Stats", href: "#stats", code: "cat stats.log" },
-  { name: "Experiences", href: "#about", code: "history" },
-  { name: "Projects", href: "#projects", code: "ls ./bin" },
-  { name: "Contact", href: "#contact", code: "ping -c 4" },
+  { name: "Home",     href: "#home" },
+  { name: "About",    href: "#about" },
+  { name: "Stack",    href: "#tech-stack" },
+  { name: "Stats",    href: "#stats" },
+  { name: "Projects", href: "#projects" },
+  { name: "Timeline", href: "#timeline" },
+  { name: "Contact",  href: "#contact" },
 ];
 
 function Navbar() {
   const [activeSection, setActiveSection] = useState("home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
+  // Detect scroll depth
   useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: "-50% 0px -50% 0px",
-      threshold: 0,
-    };
-
-    const handleIntersect = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(handleIntersect, observerOptions);
-    const sections = document.querySelectorAll("section[id]");
-
-    sections.forEach((section) => observer.observe(section));
-
-    return () => observer.disconnect();
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Prevent background scrolling when mobile menu is open
+  // Intersection observer for active section
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { rootMargin: "-50% 0px -50% 0px", threshold: 0 }
+    );
+    document.querySelectorAll("section[id]").forEach((s) => obs.observe(s));
+    return () => obs.disconnect();
+  }, []);
+
+  // Lock scroll on mobile menu open
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
   }, [isMobileMenuOpen]);
+
+  const navStyle = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 60,
+    background: scrolled ? "rgba(10,10,10,0.92)" : "transparent",
+    backdropFilter: scrolled ? "blur(12px)" : "none",
+    borderBottom: scrolled ? "1px solid rgba(228,64,28,0.15)" : "none",
+    transition: "background 0.3s, border-color 0.3s, backdrop-filter 0.3s",
+  };
 
   return (
     <>
       <motion.nav
-        initial={{ y: -80, opacity: 0 }}
+        initial={{ y: -70, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="fixed top-0 w-full backdrop-blur-xl bg-[#09090b]/70 border-b border-white/5 z-[60]"
+        transition={{ duration: 0.6, delay: 0.1 }}
+        style={navStyle}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div
+          style={{
+            maxWidth: "1100px",
+            margin: "0 auto",
+            padding: "1rem 2rem",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           {/* Logo */}
-          {/* Minimal Premium Logo */}
           <a
             href="#home"
-            className="text-2xl font-black tracking-tighter text-white group"
+            onClick={(e) => {
+              e.preventDefault();
+              if (window.lenis) {
+                window.lenis.scrollTo(0);
+              } else {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+            style={{ textDecoration: "none" }}
+            aria-label="Home"
           >
-            Shivam
-            <span className="text-indigo-500 transition-colors duration-300 group-hover:text-purple-400">
-              .
+            <span
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 700,
+                fontSize: "1.25rem",
+                textTransform: "uppercase",
+                letterSpacing: "-0.02em",
+                color: "var(--cream)",
+              }}
+            >
+              SK
+              <span style={{ color: "var(--vermilion)" }}>.</span>
             </span>
           </a>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1 lg:gap-2">
+          {/* Desktop nav */}
+          <div
+            className="desktop-nav"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.25rem",
+            }}
+          >
             {navLinks.map((link) => {
               const isActive = activeSection === link.href.substring(1);
               return (
                 <a
                   key={link.name}
                   href={link.href}
-                  className={`relative px-4 py-2 rounded-lg text-sm font-mono transition-all duration-300 group
-                    ${isActive ? "text-indigo-400 bg-indigo-500/10" : "text-zinc-400 hover:text-white hover:bg-white/5"}
-                  `}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const target = document.querySelector(link.href);
+                    if (target) {
+                      if (window.lenis) {
+                        window.lenis.scrollTo(target, { offset: -80 });
+                      } else {
+                        target.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }
+                  }}
+                  style={{
+                    position: "relative",
+                    padding: "0.5rem 0.875rem",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "0.68rem",
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: isActive ? "var(--vermilion)" : "rgba(244,237,216,0.45)",
+                    textDecoration: "none",
+                    transition: "color 0.15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) e.currentTarget.style.color = "var(--cream)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) e.currentTarget.style.color = "rgba(244,237,216,0.45)";
+                  }}
                 >
-                  <span className="relative z-10 flex items-center gap-2">
-                    {isActive && <span className="text-indigo-500">{">"}</span>}
-                    {link.name}
-                  </span>
-
-                  {/* Active Bottom Glow */}
+                  {link.name}
+                  {/* Active indicator — animated underline */}
                   {isActive && (
                     <motion.div
-                      layoutId="navGlow"
-                      className="absolute bottom-0 left-0 w-full h-[2px] bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]"
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
+                      layoutId="nav-active"
+                      style={{
+                        position: "absolute",
+                        bottom: "2px",
+                        left: "0.875rem",
+                        right: "0.875rem",
+                        height: "2px",
+                        background: "var(--vermilion)",
                       }}
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
                     />
                   )}
                 </a>
               );
             })}
+
+            {/* CTA Resume pill */}
+            <a
+              href="/Shivam%20Kishore%20CV-MAY.pdf"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                marginLeft: "1rem",
+                padding: "0.45rem 1rem",
+                fontFamily: "var(--font-mono)",
+                fontSize: "0.65rem",
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "var(--cream)",
+                border: "1.5px solid var(--vermilion)",
+                textDecoration: "none",
+                background: "transparent",
+                transition: "background 0.15s, color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--vermilion)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
+            >
+              CV
+            </a>
           </div>
 
-          {/* Mobile Menu Toggle Button */}
+          {/* Mobile hamburger */}
           <button
+            id="mobile-menu-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden relative w-10 h-10 flex flex-col justify-center items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg z-[70]"
+            aria-label="Toggle menu"
+            style={{
+              display: "none",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "5px",
+              width: "40px",
+              height: "40px",
+              background: "transparent",
+              border: "1.5px solid rgba(244,237,216,0.15)",
+              cursor: "pointer",
+              zIndex: 70,
+              position: "relative",
+            }}
+            className="mobile-only"
           >
-            <motion.span
-              animate={
-                isMobileMenuOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }
-              }
-              className="w-5 h-0.5 bg-white block transition-transform"
-            />
-            <motion.span
-              animate={isMobileMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-              className="w-5 h-0.5 bg-white block transition-opacity"
-            />
-            <motion.span
-              animate={
-                isMobileMenuOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }
-              }
-              className="w-5 h-0.5 bg-white block transition-transform"
-            />
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                animate={
+                  isMobileMenuOpen
+                    ? i === 0
+                      ? { rotate: 45, y: 10 }
+                      : i === 1
+                      ? { opacity: 0 }
+                      : { rotate: -45, y: -10 }
+                    : { rotate: 0, y: 0, opacity: 1 }
+                }
+                style={{
+                  display: "block",
+                  width: "20px",
+                  height: "1.5px",
+                  background: "var(--cream)",
+                }}
+              />
+            ))}
           </button>
         </div>
       </motion.nav>
 
-      {/* Mobile Full-Screen Overlay */}
+      {/* Mobile overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(20px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[55] bg-[#09090b]/90 md:hidden flex flex-col justify-center px-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 55,
+              background: "rgba(10,10,10,0.97)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              padding: "2rem",
+            }}
           >
-            {/* Terminal Header for Mobile Menu */}
-            <div className="absolute top-24 left-8 right-8 border-b border-white/10 pb-4 flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500/80" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-              <div className="w-3 h-3 rounded-full bg-green-500/80" />
-              <span className="ml-4 font-mono text-xs text-zinc-500">
-                root@shivam:~
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-6 mt-10">
+            {/* Mobile nav links */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
               {navLinks.map((link, i) => {
                 const isActive = activeSection === link.href.substring(1);
-
                 return (
                   <motion.a
                     key={link.name}
                     href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    initial={{ x: -50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{
-                      delay: i * 0.1,
-                      duration: 0.4,
-                      ease: "easeOut",
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsMobileMenuOpen(false);
+                      setTimeout(() => {
+                        const target = document.querySelector(link.href);
+                        if (target) {
+                          if (window.lenis) {
+                            window.lenis.scrollTo(target, { offset: -80 });
+                          } else {
+                            target.scrollIntoView({ behavior: "smooth" });
+                          }
+                        }
+                      }, 300);
                     }}
-                    className={`group flex flex-col font-mono ${isActive ? "text-indigo-400" : "text-zinc-400"}`}
+                    initial={{ x: -40, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: i * 0.07, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 700,
+                      fontSize: "clamp(2rem, 10vw, 3.5rem)",
+                      textTransform: "uppercase",
+                      letterSpacing: "-0.02em",
+                      lineHeight: 1.2,
+                      color: isActive ? "var(--vermilion)" : "var(--cream)",
+                      textDecoration: "none",
+                      borderBottom: "1px solid rgba(244,237,216,0.06)",
+                      padding: "0.6rem 0",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      transition: "color 0.15s",
+                    }}
                   >
-                    <span className="text-[10px] text-zinc-600 mb-1 group-hover:text-indigo-500/50 transition-colors">
-                      $ {link.code}
-                    </span>
-                    <span className="text-3xl font-bold tracking-tight group-hover:text-white transition-colors flex items-center gap-4">
-                      {isActive && (
-                        <span className="text-indigo-500 animate-pulse">
-                          {">"}
-                        </span>
-                      )}
-                      {link.name}
-                    </span>
+                    {isActive && (
+                      <span style={{ color: "var(--vermilion)", fontSize: "0.5em" }}>◆</span>
+                    )}
+                    {link.name}
                   </motion.a>
                 );
               })}
             </div>
+
+            {/* Bottom info in mobile */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+              style={{
+                position: "absolute",
+                bottom: "2rem",
+                left: "2rem",
+                right: "2rem",
+                borderTop: "1px solid rgba(244,237,216,0.08)",
+                paddingTop: "1rem",
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.6rem",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "rgba(244,237,216,0.2)",
+                }}
+              >
+                Shivam Kishore · 2026
+              </span>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.6rem",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "rgba(228,64,28,0.4)",
+                }}
+              >
+                Full Stack Engineer
+              </span>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* CSS for responsive */}
+      <style>{`
+        @media (min-width: 768px) {
+          .mobile-only { display: none !important; }
+          .desktop-nav { display: flex !important; }
+        }
+        @media (max-width: 767px) {
+          .desktop-nav { display: none !important; }
+          .mobile-only { display: flex !important; }
+        }
+      `}</style>
     </>
   );
 }
