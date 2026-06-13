@@ -633,7 +633,7 @@ const HeroSection = () => {
             lineHeight: 1.7,
           }}
         >
-          DEVELOPER @ EdMentor · B.Tech CS @ IIIT Dharwad · MERN Stack · Competitive Programmer<br />
+          DEVELOPER INTERN @ EdMentor · B.Tech CS @ IIIT Dharwad · MERN Stack · Competitive Programmer<br />
           <span style={{ color: "rgba(228,64,28,0.6)" }}>300+ DSA</span> · LeetCode 1446 · Hackathon 4th
         </motion.p>
 
