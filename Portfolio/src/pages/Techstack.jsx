@@ -4,21 +4,39 @@ import { slideUp, lineDraw } from "../hooks/useScrollAnimation";
 
 // ─── Tech data ────────────────────────────────────────────
 const skills = [
-  { name: "C++",        icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg",  cat: "Lang" },
-  { name: "Python",     icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",        cat: "Lang" },
-  { name: "JavaScript", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg", cat: "Lang" },
-  { name: "React",      icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",           cat: "Frontend" },
-  { name: "Tailwind",   icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg", cat: "Frontend" },
-  { name: "HTML5",      icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg",           cat: "Frontend" },
-  { name: "CSS3",       icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg",             cat: "Frontend" },
-  { name: "Node.js",    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",         cat: "Backend" },
-  { name: "Express",    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg",       cat: "Backend", invert: true },
-  { name: "Socket.io",  icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/socketio/socketio-original.svg", cat: "Backend" },
-  { name: "MongoDB",    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg",       cat: "DB/Cloud" },
-  { name: "MySQL",      icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg",           cat: "DB/Cloud" },
-  { name: "Git",        icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg",               cat: "DB/Cloud" },
-  { name: "GitHub",     icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg",         cat: "DB/Cloud", invert: true },
-  { name: "Cloudinary", icon: "https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/cloudinary.svg",                    cat: "DB/Cloud", invert: true },
+  // ── Languages ──────────────────────────────────────────
+  { name: "C++",         icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg",        cat: "Lang" },
+  { name: "Python",      icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",              cat: "Lang" },
+  { name: "JavaScript",  icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg",     cat: "Lang" },
+  { name: "TypeScript",  icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg",     cat: "Lang" },
+
+  // ── Frontend ───────────────────────────────────────────
+  { name: "React",       icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",               cat: "Frontend" },
+  { name: "Next.js",     icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg",             cat: "Frontend", invert: true },
+  { name: "Tailwind",    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg",   cat: "Frontend" },
+  { name: "Framer",      icon: "https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/framer.svg",                            cat: "Frontend", invert: true },
+  { name: "Redux",       icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redux/redux-original.svg",               cat: "Frontend" },
+  { name: "Vite",        icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vitejs/vitejs-original.svg",             cat: "Frontend" },
+  { name: "HTML5",       icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg",               cat: "Frontend" },
+  { name: "CSS3",        icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg",                 cat: "Frontend" },
+
+  // ── Backend ────────────────────────────────────────────
+  { name: "Node.js",     icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",             cat: "Backend" },
+  { name: "Express",     icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg",           cat: "Backend", invert: true },
+  { name: "Socket.io",   icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/socketio/socketio-original.svg",  cat: "Backend" },
+  { name: "GSAP",        icon: "https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/greensock.svg",                        cat: "Backend", invert: true },
+  { name: "JWT",         icon: "https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/jsonwebtokens.svg",                    cat: "Backend", invert: true },
+  { name: "Razorpay",    icon: "https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/razorpay.svg",                         cat: "Backend", invert: true },
+
+  // ── DB / Cloud / Tools ─────────────────────────────────
+  { name: "MongoDB",     icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg",           cat: "DB/Cloud" },
+  { name: "Redis",       icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg",               cat: "DB/Cloud" },
+  { name: "MySQL",       icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg",               cat: "DB/Cloud" },
+  { name: "Cloudinary",  icon: "https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/cloudinary.svg",                       cat: "DB/Cloud", invert: true },
+  { name: "Vercel",      icon: "https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/vercel.svg",                           cat: "DB/Cloud", invert: true },
+  { name: "Resend",      icon: "https://cdn.jsdelivr.net/npm/simple-icons@v10/icons/resend.svg",                           cat: "DB/Cloud", invert: true },
+  { name: "Git",         icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg",                   cat: "DB/Cloud" },
+  { name: "GitHub",      icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg",             cat: "DB/Cloud", invert: true },
 ];
 
 const ACCENTS = ["var(--vermilion)", "var(--acid)", "var(--cream)"];
@@ -422,7 +440,7 @@ const TechStack = () => {
             flexWrap: "wrap",
           }}
         >
-          {["Languages", "Frontend", "Backend", "Databases & Cloud"].map((cat) => (
+          {["Languages", "Frontend", "Backend", "DB / Cloud & Tools"].map((cat) => (
             <span
               key={cat}
               style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(244,237,216,0.25)" }}
