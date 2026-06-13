@@ -12,7 +12,7 @@ const projectsData = [
     tech: ["Next.js 15", "TypeScript", "Tailwind CSS", "ShadCN UI", "MongoDB", "Redis", "Groq (LLM)", "NextAuth", "Vercel"],
     github: "https://github.com/Shivwhoo/ReviewFlowAI",
     live: "https://github.com/Shivwhoo/ReviewFlow",
-    status: "IN DEVELOPMENT",
+    status: "DEPLOYED",
     accentBg: "var(--violet)",
     image: "/reviewflow-preview.png",
     confession: "The AI sometimes writes reviews that sound too human – we call it 'feature, not bug'."
@@ -25,7 +25,7 @@ const projectsData = [
     tech: ["React", "Node.js", "Express", "MongoDB", "Tailwind CSS", "Framer Motion", "Google Calendar API", "Razorpay", "Resend", "JWT", "Web Speech API", "Cloudinary"],
     github: "https://github.com/Shivwhoo/Special-Smile-An-autism-webpage-",
     live: "https://special-smile-an-autism-webpage.vercel.app/",
-    status: "COMPLETED",
+    status: "DEPLOYED",
     accentBg: "var(--pastel-blue)",
     image: "/autism-care-preview.png",
     confession: "Parents cried seeing the milestone chart – we didn't plan for that, but we'll take it."
@@ -126,8 +126,8 @@ function InkSplatter() {
 
 // ─── Poster Card ──────────────────────────────────────────
 function PosterCard({ project, index, eyesOffset, globalNuke }) {
-  const isLight = project.accentBg === "var(--cream)";
-  const textOnAccent = "var(--ink)";
+  const darkAccents = ["var(--violet)", "var(--vermilion)"];
+  const textOnAccent = darkAccents.includes(project.accentBg) ? "var(--cream)" : "var(--ink)";
   const [isCrumpled, setIsCrumpled] = useState(false);
   const [isRipped, setIsRipped] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
