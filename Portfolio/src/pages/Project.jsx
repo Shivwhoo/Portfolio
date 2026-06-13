@@ -130,11 +130,13 @@ function PosterCard({ project, index, eyesOffset, globalNuke }) {
   const textOnAccent = "var(--ink)";
   const [isCrumpled, setIsCrumpled] = useState(false);
   const [isRipped, setIsRipped] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     if (globalNuke) {
       setIsCrumpled(false);
       setIsRipped(false);
+      setIsExpanded(false);
     }
   }, [globalNuke]);
 
@@ -149,7 +151,6 @@ function PosterCard({ project, index, eyesOffset, globalNuke }) {
       style={{
         flex: "0 0 300px",
         width: "300px",
-        height: "480px",
         background: "var(--charcoal-2)",
         border: "2.5px solid var(--ink)",
         display: "flex",
@@ -267,13 +268,59 @@ function PosterCard({ project, index, eyesOffset, globalNuke }) {
       </div>
 
       {/* Body */}
-      <div style={{ flex: 1, padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.75rem", overflow: "hidden" }}>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.72rem", lineHeight: 1.7, color: "rgba(244,237,216,0.6)", flexShrink: 0 }}>
-          {project.description}
-        </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginTop: "auto" }}>
+      <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+
+        {/* Description — collapses to 2 lines by default, expands fully */}
+        <div style={{ position: "relative" }}>
+          <p
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "0.72rem",
+              lineHeight: 1.7,
+              color: "rgba(244,237,216,0.6)",
+              margin: 0,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: isExpanded ? "unset" : 3,
+              transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+            }}
+          >
+            {project.description}
+          </p>
+          {/* Fade-out gradient when collapsed */}
+          {!isExpanded && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: "28px",
+                background: "linear-gradient(to bottom, transparent, var(--charcoal-2))",
+                pointerEvents: "none",
+              }}
+            />
+          )}
+        </div>
+
+        {/* Tech Stack — always visible */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginTop: "0.25rem" }}>
           {project.tech.map((t) => (
-            <span key={t} style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", letterSpacing: "0.12em", textTransform: "uppercase", padding: "2px 7px", background: "rgba(255,213,0,0.08)", border: "1px solid rgba(255,213,0,0.3)", color: "var(--acid)" }}>
+            <span
+              key={t}
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "0.52rem",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                padding: "2px 6px",
+                background: "rgba(255,213,0,0.08)",
+                border: "1px solid rgba(255,213,0,0.25)",
+                color: "var(--acid)",
+                borderRadius: "1px",
+              }}
+            >
               {t}
             </span>
           ))}
@@ -281,7 +328,7 @@ function PosterCard({ project, index, eyesOffset, globalNuke }) {
       </div>
 
       {/* Links */}
-      <div style={{ borderTop: "1.5px solid rgba(244,237,216,0.1)", padding: "0.75rem 1.25rem", display: "flex", gap: "1rem", flexShrink: 0, background: "rgba(10,10,10,0.3)", zIndex: 10 }}>
+      <div style={{ borderTop: "1.5px solid rgba(244,237,216,0.1)", padding: "0.75rem 1.25rem", display: "flex", gap: "1rem", flexShrink: 0, background: "rgba(10,10,10,0.3)", zIndex: 10, alignItems: "center" }}>
         <a href={project.github} target="_blank" rel="noreferrer"
           style={{ fontFamily: "var(--font-mono)", fontSize: "0.62rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--cream)", textDecoration: "none", opacity: 0.6, transition: "opacity 0.15s, color 0.15s", borderBottom: "1px solid transparent" }}
           onMouseEnter={(e) => { e.currentTarget.style.opacity = 1; e.currentTarget.style.color = "var(--vermilion)"; e.currentTarget.style.borderBottomColor = "var(--vermilion)"; }}
@@ -294,6 +341,29 @@ function PosterCard({ project, index, eyesOffset, globalNuke }) {
             onMouseLeave={(e) => { e.currentTarget.style.opacity = 0.8; e.currentTarget.style.borderBottomColor = "transparent"; }}
           >↗ Live</a>
         )}
+
+        {/* Expand toggle */}
+        <button
+          onClick={(e) => { e.stopPropagation(); setIsExpanded((v) => !v); }}
+          style={{
+            background: isExpanded ? "rgba(255,213,0,0.12)" : "transparent",
+            border: `1px solid ${isExpanded ? "rgba(255,213,0,0.5)" : "rgba(244,237,216,0.2)"}`,
+            color: isExpanded ? "var(--acid)" : "rgba(244,237,216,0.4)",
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.55rem",
+            cursor: "pointer",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            padding: "3px 8px",
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            transition: "all 0.2s",
+          }}
+          title={isExpanded ? "Collapse" : "Expand description"}
+        >
+          {isExpanded ? "▲ Less" : "▼ More"}
+        </button>
 
         {/* Crumple trigger */}
         <button
