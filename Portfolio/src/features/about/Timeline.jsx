@@ -107,7 +107,15 @@ const timelineEvents = [
     accent: "var(--vermilion)",
   },
   {
-    id: 2,
+  id: 2,
+    date: "2026 – Present",
+    title: "Software Development Intern @ EdMentor",
+    desc: "Working on full-stack development for an EdTech platform, building scalable features, CRM modules, real-time systems, payment integrations, and improving user experience across the product.",
+    tags: ["Full-Stack", "EdTech", "Real-Time Systems"],
+    accent: "var(--vermilion)",
+  },
+  {
+    id: 3,
     date: "Ongoing",
     title: "Problem Solving & Hackathons",
     desc: "300+ DSA problems solved. LeetCode 1446. Codeforces 733. 4th place at Tech Odyssey Hackathon. Compete to win.",
@@ -115,7 +123,7 @@ const timelineEvents = [
     accent: "var(--acid)",
   },
   {
-    id: 3,
+    id: 4,
     date: "Recent Projects",
     title: "Full-Stack Engineering",
     desc: "Production-ready systems: Pingster (real-time chat), EdTraining (edtech platform), Blogify. MERN stack, Socket.io, Razorpay.",
@@ -123,7 +131,7 @@ const timelineEvents = [
     accent: "var(--vermilion)",
   },
   {
-    id: 4,
+    id: 5,
     date: "Active",
     title: "Leadership & Communities",
     desc: "Emcee & Event Lead at Zeitgeist Literary & Cultural Club — events for 500+ attendees. Web Dev member at Velocity.",
@@ -131,7 +139,7 @@ const timelineEvents = [
     accent: "var(--acid)",
   },
   {
-    id: 5,
+    id: 6,
     date: "2020 – 2022",
     title: "Class XII — ISC 92.4%",
     desc: "Don Bosco Academy, Patna. Built academic discipline and competitive consistency early on.",
@@ -139,7 +147,7 @@ const timelineEvents = [
     accent: "var(--cream)",
   },
   {
-    id: 6,
+    id: 7,
     date: "Dec 2025",
     title: "Bronze Medal — Badminton",
     desc: "Intra IIIT Badminton Tournament Bronze Medalist. Competitive mindset beyond the terminal.",
