@@ -7,7 +7,6 @@ import StatsSection from "../features/stats/StatsSection";
 import PosterBackground from "../components/InteractiveBackground";
 import AboutMe from "../features/about/AboutMe";
 import Timeline from "../features/about/Timeline";
-import CatPatrol from "../components/CatPatrol";
 
 // ── Section wrapper — keeps layout static to avoid scroll jitters ──
 function SectionReveal({ children, id, style = {} }) {
@@ -39,9 +38,6 @@ export default function Home() {
 
       {/* Main content — z-index above background */}
       <div style={{ position: "relative", zIndex: 1 }}>
-
-        {/* ── CAT PATROL ── */}
-        <CatPatrol />
 
         {/* ── HERO ── */}
         <HeroSection />
