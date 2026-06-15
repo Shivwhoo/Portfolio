@@ -142,6 +142,7 @@ function PosterCard({ project, index, eyesOffset, globalNuke }) {
 
   return (
     <motion.div
+      data-project-card={index === 0 ? "first" : undefined}
       animate={
         isCrumpled
           ? { scale: 0.78, rotate: -3, filter: "contrast(1.4) brightness(0.95)" }
